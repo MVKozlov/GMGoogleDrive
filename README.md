@@ -1,6 +1,6 @@
 # GMGoogleDrive
 Google Drive REST Api module for Powershell
-# GoogleDrive Setup
+### GoogleDrive Setup
 Google Drive is a free service for file storage files. In order to use this storage you need a Google (or Google Apps) user which will own the files, and a Google API client.
 1. Go to the [Google Developers console](https://console.developers.google.com/project) and create a new project.
 2. Go to **APIs & Auth** > **APIs** and enable **Drive API**.
@@ -44,7 +44,7 @@ $access = Request-GDriveAccessToken -ClientID $oauth_json.web.client_id `
   -RefreshToken $refresh.refresh_token
 ```
 
-# Usage
+### Usage
 
 ``` powershell
 # Upload new file
@@ -57,7 +57,7 @@ Set-GDriveItemContent -AccessToken $access.access_token -ID $file.id -StringCont
 Get-GDriveItemProperty -AccessToken $access.access_token -ID $file.id -Property parents, modifiedTime
 # and so on :)
 ```
-# Error Handling
+### Error Handling
 Error handling left for self-production :)
 
 Cmdlets exiting at the first error, but, for example if Metadata Upload succeded but content upload failed, **UploadID** returned for resume operations later
