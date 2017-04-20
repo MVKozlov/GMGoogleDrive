@@ -92,7 +92,7 @@ param(
         $response = $wr.GetResponse()
     }
     catch {
-        Write-Error $_.Exception -ErrorAction $ErrorActionPreference
+        Write-Error $_.Exception
         return
     }
     try {
@@ -141,7 +141,7 @@ param(
                     }
                 }
                 else {
-                    Write-Error 'Can''t create stream' -ErrorAction $ErrorActionPreference
+                    Write-Error 'Can''t create stream'
                 }
             }
             finally {
@@ -150,7 +150,7 @@ param(
             }
         }
         else {
-            Write-Error $response.StatusDescription -ErrorAction $ErrorActionPreference
+            Write-Error $response.StatusDescription
         }
     }
     finally {

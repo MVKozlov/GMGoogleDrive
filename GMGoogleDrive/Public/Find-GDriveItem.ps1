@@ -78,11 +78,11 @@ param(
         do {
             $PSBoundParameters['NextPageToken'] = $NextPageToken
             $list = Find-GDriveItem @PSBoundParameters
-            if ($list -eq $null) { break }
+            if ($null -eq $list) { break }
             $NextPageToken = $list.nextPageToken
             $files.AddRange($list.files)
         } while ($NextPageToken)
-        if ($list -ne $null) {
+        if ($null -eq $list) {
             $list.files = $files.ToArray()
             $list
         }

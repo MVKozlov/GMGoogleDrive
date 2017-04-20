@@ -67,7 +67,7 @@
     https://developers.google.com/drive/v3/web/resumable-upload
 #>
 function Set-GDriveItemContent {
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess=$true)]
     param(
         [Parameter(Position=0, ParameterSetName='dataMeta')]
         [Parameter(Position=0, ParameterSetName='stringMeta')]
@@ -146,7 +146,7 @@ function Set-GDriveItemContent {
     catch {
         $UploadResult.Error = $_.Exception
         $UploadResult
-        Write-Error $_.Exception -ErrorAction $ErrorActionPreference
+        Write-Error $_.Exception
         return
     }
     try {
@@ -195,14 +195,17 @@ function Set-GDriveItemContent {
             elseif ($PSCmdlet.ParameterSetName -match 'data')   { $uploadString += " from [byte[] array]" }
             Write-Progress -Activity $uploadString -Status 'Metadata upload' -PercentComplete 1
         }
-        $UploadID = $wr = $null
+        $wr = $null
         try {
-            $wr = Invoke-WebRequest @WebRequestParams @GDriveProxySettings
+            if ($PSCmdlet.ShouldProcess($uploadString)) {
+                $wr = Invoke-WebRequest @WebRequestParams @GDriveProxySettings
+            }
         }
         catch {
             $UploadResult.Error = $_.Exception
             $UploadResult
-            Write-Error $_.Exception -ErrorAction $ErrorActionPreference
+            Write-Error $_.Exception
+            return
         }
 
         if ($wr.StatusCode -in 200,308) {
@@ -228,76 +231,78 @@ function Set-GDriveItemContent {
                 }
                 $WebRequestParams.Method = 'Put'
 
-                if ($UploadedSize -eq 0 -and
-                    $stream.Length -le $ChunkSize -and
-                    ($PSCmdlet.ParameterSetName -notin 'fileName','fileMeta'))
-                {
-                    Write-Verbose 'Single request upload'
-                    $WebRequestParams.Headers = @{
-                        "Authorization"  = "Bearer $AccessToken"
-                        "Content-Type"   = $ContentType
-                        "Content-Length" = $stream.Length
-                    }
-                    $WebRequestParams.Body = $RawContent
-
-                    Write-Verbose ("Content-Length: {0}" -f $WebRequestParams.Headers['Content-Length'])
-                    if ($ShowProgress) {
-                        Write-Progress -Activity $uploadString -Status "Content upload [0-$($stream.Length)/$($stream.Length)]" -PercentComplete 99
-                    }
-                    $wr = Invoke-WebRequest @WebRequestParams @GDriveProxySettings
-                }
-                else {
-                    Write-Verbose 'Multiple requests upload'
-                    [byte[]]$buffer = New-Object byte[] $ChunkSize
-                    do {
-                        $nextSize = [Math]::Min($UploadedSize + $ChunkSize, $stream.Length)
-                        $Range = "bytes $($UploadedSize)-$($nextSize-1)/$($stream.Length)"
-                        $Length = [Math]::Min($ChunkSize, $stream.Length - $UploadedSize)
+                if ($PSCmdlet.ShouldProcess($uploadString)) {
+                    if ($UploadedSize -eq 0 -and
+                        $stream.Length -le $ChunkSize -and
+                        ($PSCmdlet.ParameterSetName -notin 'fileName','fileMeta'))
+                    {
+                        Write-Verbose 'Single request upload'
                         $WebRequestParams.Headers = @{
                             "Authorization"  = "Bearer $AccessToken"
                             "Content-Type"   = $ContentType
-                            "Content-Range"  = $Range
-                            "Content-Length" = $Length
+                            "Content-Length" = $stream.Length
                         }
-                        # last buffer can be smaller
-                        if ($Length -lt $ChunkSize) {
-                            [byte[]]$buffer = New-Object byte[] $Length
-                        }
-                        $len = $stream.Read($buffer, 0, $Length);
-                        if ($len -ne $Length) {
-                            throw "Stream read error: Readed $len bytes instead of $Length"
-                        }
-                        $WebRequestParams.Body = $buffer
-                        Write-Verbose ("Content-Length: {0}, Content-Range {1}, readed: {2}" -f $WebRequestParams.Headers["Content-Length"], $WebRequestParams.Headers['Content-Range'], $len)
+                        $WebRequestParams.Body = $RawContent
+
+                        Write-Verbose ("Content-Length: {0}" -f $WebRequestParams.Headers['Content-Length'])
                         if ($ShowProgress) {
-                            Write-Progress -Activity $uploadString -Status "Content upload [$($Range -replace 'bytes ')]" -PercentComplete ($nextSize*100/$stream.Length)
+                            Write-Progress -Activity $uploadString -Status "Content upload [0-$($stream.Length)/$($stream.Length)]" -PercentComplete 99
                         }
                         $wr = Invoke-WebRequest @WebRequestParams @GDriveProxySettings
-                        switch ($wr.StatusCode) {
-                            308 {
-                                    # bytes=0-262143
-                                    Write-Verbose "Received Range: $($wr.Headers['Range'])"
-                                    if ($wr.Headers['Range'] -match 'bytes=(\d+)-(\d+)')
-                                    {
-                                        $UploadedSize = ([int]$matches[2]) + 1
-                                        Write-Verbose "Stream Position: $($stream.Position), UploadedSize:$($UploadedSize)"
-                                        if ($stream.Position -ne $UploadedSize)
+                    }
+                    else {
+                        Write-Verbose 'Multiple requests upload'
+                        [byte[]]$buffer = New-Object byte[] $ChunkSize
+                        do {
+                            $nextSize = [Math]::Min($UploadedSize + $ChunkSize, $stream.Length)
+                            $Range = "bytes $($UploadedSize)-$($nextSize-1)/$($stream.Length)"
+                            $Length = [Math]::Min($ChunkSize, $stream.Length - $UploadedSize)
+                            $WebRequestParams.Headers = @{
+                                "Authorization"  = "Bearer $AccessToken"
+                                "Content-Type"   = $ContentType
+                                "Content-Range"  = $Range
+                                "Content-Length" = $Length
+                            }
+                            # last buffer can be smaller
+                            if ($Length -lt $ChunkSize) {
+                                [byte[]]$buffer = New-Object byte[] $Length
+                            }
+                            $len = $stream.Read($buffer, 0, $Length);
+                            if ($len -ne $Length) {
+                                throw "Stream read error: Readed $len bytes instead of $Length"
+                            }
+                            $WebRequestParams.Body = $buffer
+                            Write-Verbose ("Content-Length: {0}, Content-Range {1}, readed: {2}" -f $WebRequestParams.Headers["Content-Length"], $WebRequestParams.Headers['Content-Range'], $len)
+                            if ($ShowProgress) {
+                                Write-Progress -Activity $uploadString -Status "Content upload [$($Range -replace 'bytes ')]" -PercentComplete ($nextSize*100/$stream.Length)
+                            }
+                            $wr = Invoke-WebRequest @WebRequestParams @GDriveProxySettings
+                            switch ($wr.StatusCode) {
+                                308 {
+                                        # bytes=0-262143
+                                        Write-Verbose "Received Range: $($wr.Headers['Range'])"
+                                        if ($wr.Headers['Range'] -match 'bytes=(\d+)-(\d+)')
                                         {
-                                            Write-Verbose "Fast Forward to:$($UploadedSize)"
-                                            [void]$stream.Seek($UploadedSize, [System.IO.SeekOrigin]::Begin)
+                                            $UploadedSize = ([int]$matches[2]) + 1
+                                            Write-Verbose "Stream Position: $($stream.Position), UploadedSize:$($UploadedSize)"
+                                            if ($stream.Position -ne $UploadedSize)
+                                            {
+                                                Write-Verbose "Fast Forward to:$($UploadedSize)"
+                                                [void]$stream.Seek($UploadedSize, [System.IO.SeekOrigin]::Begin)
+                                            }
                                         }
                                     }
-                                }
-                        }
-                    } until ($wr.StatusCode -eq 200)
+                            }
+                        } until ($wr.StatusCode -eq 200)
+                    }
+                    $UploadResult.Item = ($wr.Content | ConvertFrom-Json)
                 }
-                $UploadResult.Item = ($wr.Content | ConvertFrom-Json)
                 $UploadResult
             }
             catch {
                 $UploadResult.Error = $_.Exception
                 $UploadResult
-                   Write-Error $_.Exception -ErrorAction $ErrorActionPreference
+                   Write-Error $_.Exception
             }
         }
     }

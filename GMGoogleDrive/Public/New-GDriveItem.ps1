@@ -29,7 +29,7 @@
     https://developers.google.com/drive/v3/reference/files/create
 #>
 function New-GDriveItem {
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess=$true)]
     param(
         [Parameter(Mandatory, ParameterSetName='name')]
         [string]$Name,
@@ -59,6 +59,7 @@ function New-GDriveItem {
     $Uri = '{0}?fields={1}' -f $GDriveUri, ($Property -join ',')
     Write-Verbose "URI: $Uri"
     Write-Verbose "RequestBody: $JsonProperty"
-
-    Invoke-RestMethod -Uri $Uri -Method Post -Headers $Headers -Body $JsonProperty @GDriveProxySettings
+    if ($PSCmdlet.ShouldProcess("Create new item $Name")) {
+        Invoke-RestMethod -Uri $Uri -Method Post -Headers $Headers -Body $JsonProperty @GDriveProxySettings
+    }
 }

@@ -48,7 +48,7 @@
     Set-GDriveItemContent
 #>
 function Add-GDriveItem {
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess=$true)]
     param(
         [Parameter(Mandatory, ParameterSetName='stringName')]
         [Parameter(Mandatory, ParameterSetName='stringMeta')]

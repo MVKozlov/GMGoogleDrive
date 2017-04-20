@@ -21,7 +21,8 @@
     Set-GDriveItemContent
 #>
 function Rename-GDriveItem {
-[CmdletBinding(DefaultParameterSetName='String')]
+[CmdletBinding(SupportsShouldProcess=$true,
+    DefaultParameterSetName='String')]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
@@ -33,9 +34,10 @@ param(
     [string]$AccessToken
 )
 
-    $PSBoundParameters.Add('Property', ('{{ "name": "{0}" }}' -f $NewName) )
-    Write-Verbose ('Property: ' + $PSBoundParameters['Property'])
+    $PSBoundParameters.Add('JsonProperty', ('{{ "name": "{0}" }}' -f $NewName) )
+    Write-Verbose ('JsonProperty: ' + $PSBoundParameters['JsonProperty'])
     [void]$PSBoundParameters.Remove('NewName')
-
-    Set-GDriveItemProperty @PSBoundParameters
+    if ($PSCmdlet.ShouldProcess("Rename Item $ID to $NewName")) {
+        Set-GDriveItemProperty @PSBoundParameters
+    }
 }

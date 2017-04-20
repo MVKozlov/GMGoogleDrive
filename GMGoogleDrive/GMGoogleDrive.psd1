@@ -13,7 +13,7 @@
 RootModule = 'GMGoogleDrive'
 
 # Version number of this module.
-ModuleVersion = '1.0.0.0'
+ModuleVersion = '1.0.1.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -76,6 +76,8 @@ FunctionsToExport = @(
     'Request-GDriveAccessToken',
     'Revoke-GDriveToken',
 
+    'Get-GDriveSummary',
+
     'Find-GDriveItem',
     'Get-GDriveChildItem',
     'New-GDriveFolder',
@@ -92,8 +94,8 @@ FunctionsToExport = @(
     'Copy-GDriveItem',
     'Remove-GDriveItem',
 
-    'Get-GDriveProxySettings',
-    'Set-GDriveProxySettings'
+    'Get-GDriveProxySetting',
+    'Set-GDriveProxySetting'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

@@ -15,17 +15,17 @@
 .LINK
     Request-GDriveAccessToken
     Request-GDriveRefreshToken
-    https://developers.google.com/identity/protocols/OAuth2
     https://developers.google.com/identity/protocols/OAuth2InstalledApp
-    https://developers.google.com/identity/protocols/OAuth2WebServer
 #>
 function Revoke-GDriveToken {
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='High')]
     param(
         [Parameter(Mandatory, Position=0)]
         [string]$Token
     )
 
-    $Uri = '{0}/revoke?token={1}' -f $GDriveAccountsTokenUri, $Token
-    Invoke-RestMethod -Method Get -Uri $Uri @GDriveProxySettings
+    $Uri = '{0}?token={1}' -f $GDriveRevokeTokenUri, $Token
+    if ($PSCmdlet.ShouldProcess('Revoke Token')) {
+        Invoke-RestMethod -Method Get -Uri $Uri @GDriveProxySettings
+    }
 }

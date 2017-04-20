@@ -21,7 +21,7 @@
     https://developers.google.com/drive/v3/reference/files/create
 #>
 function New-GDriveFolder {
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess=$true)]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$Name,
@@ -41,6 +41,7 @@ param(
     Write-Verbose "URI: $Uri"
     $RequestBody = '{{ "name": "{0}", "mimeType": "application/vnd.google-apps.folder", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
     Write-Verbose "RequestBody: $RequestBody"
-
-    Invoke-RestMethod -Uri $Uri -Method Post -Headers $Headers -Body $RequestBody @GDriveProxySettings
+    if ($PSCmdlet.ShouldProcess("Create new folder $Name")) {
+        Invoke-RestMethod -Uri $Uri -Method Post -Headers $Headers -Body $RequestBody @GDriveProxySettings
+    }
 }

@@ -25,7 +25,8 @@
     Remove-GDriveItem
 #>
 function Move-GDriveItem {
-[CmdletBinding(DefaultParameterSetName='String')]
+[CmdletBinding(SupportsShouldProcess=$true,
+    DefaultParameterSetName='String')]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
@@ -46,7 +47,7 @@ param(
             $ParentID = $info.parents
         }
         catch {
-            Write-Error $_.Exception -ErrorAction $ErrorActionPreference
+            Write-Error $_.Exception
             return
         }
     }
@@ -58,5 +59,7 @@ param(
         "Authorization" = "Bearer $AccessToken"
         "Content-type"  = "application/json"
     }
-    Invoke-RestMethod -Uri $Uri -Method Patch -Headers $Headers @GDriveProxySettings
+    if ($PSCmdlet.ShouldProcess("Move item $ID to $($NewParentID -join ',')")) {
+        Invoke-RestMethod -Uri $Uri -Method Patch -Headers $Headers @GDriveProxySettings
+    }
 }

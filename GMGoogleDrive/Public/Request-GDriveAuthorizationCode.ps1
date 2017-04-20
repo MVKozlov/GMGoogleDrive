@@ -10,10 +10,8 @@
     OAuth2 Client Secret
 .PARAMETER Automatic
     DANGEROUS! Try to automatically approve access
-.PARAMETER Username
-    DANGEROUS! Google account username to automatic code request
-.PARAMETER Password
-    DANGEROUS! Google account password to automatic code request
+.PARAMETER Credential
+    DANGEROUS! Google account username/password to automatic code request
 .PARAMETER RefreshToken
     OAuth2 RefreshToken
 .EXAMPLE
@@ -51,13 +49,11 @@ function Request-GDriveAuthorizationCode {
         [switch]$Automatic,
 
         [Parameter(ParameterSetName='auto')]
-        [string]$UserName,
-
-        [Parameter(ParameterSetName='auto')]
-        [string]$Password,
+        [PSCredential][System.Management.Automation.Credential()]$Credential,
 
         [string]$RedirectUri = 'https://developers.google.com/oauthplayground'
     )
+	If ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
 
     $scope = [System.Uri]::EscapeDataString($GDriveAuthScope)
     $Uri = '{0}?access_type={1}&response_type={2}&prompt={3}&client_id={4}&redirect_uri={5}&scope={6}' -f
@@ -83,6 +79,17 @@ function Request-GDriveAuthorizationCode {
         Write-Debug 'Not automatic access'
         $ie.Visible = $true
         $Automatic = $false
+    }
+
+    if ($PSBoundParameters.ContainsKey('Credential') -and -Not ($Credential)) {
+        $Credential = Get-Credential
+    }
+    if ($Credential) {
+        $Username = $Credential.UserName
+        $Password = $Credential.GetNetworkCredential().Password
+    }
+    else {
+        $Username = $Password = $null
     }
 
     $loginstate = 0
@@ -136,7 +143,7 @@ function Request-GDriveAuthorizationCode {
                     if ($Automatic) {
                         Write-Debug 'Next Click'
                         $email.Value = $UserName
-                        try { $emailbutton.Click() } catch {}
+                        try { $emailbutton.Click() } catch { $null }
                     }
                 }
                 else {
@@ -152,7 +159,7 @@ function Request-GDriveAuthorizationCode {
                     if ($Automatic) {
                         Write-Debug 'Passwd Click'
                         $passwd.Value = $Password
-                        try { $passwdbutton.Click() } catch {}
+                        try { $passwdbutton.Click() } catch { $null }
                     }
                 }
                 else {
@@ -165,7 +172,7 @@ function Request-GDriveAuthorizationCode {
                 $loginstate = 3
                 if ($Automatic) {
                     Write-Debug 'Approve Click'
-                    try { $accessbutton.Click() } catch {}
+                    try { $accessbutton.Click() } catch { $null }
                 }
             }
         }
@@ -178,7 +185,7 @@ function Request-GDriveAuthorizationCode {
     } until ($loginstate -eq 4)
 
     if ($loginstate -eq -1) {
-        Write-Error $err -ErrorAction $ErrorActionPreference
+        Write-Error $err
     }
     else {
         $url = $ie.Document.url
@@ -192,7 +199,7 @@ function Request-GDriveAuthorizationCode {
             $code
         }
         else {
-            Write-Error ($url -replace '.*/?error=' -replace '[&#].*') -Category PermissionDenied -ErrorAction $ErrorActionPreference
+            Write-Error ($url -replace '.*/?error=' -replace '[&#].*') -Category PermissionDenied
         }
     }
 }

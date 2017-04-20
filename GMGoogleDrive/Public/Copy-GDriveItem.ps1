@@ -31,7 +31,8 @@
     https://developers.google.com/drive/v3/reference/files/copy
 #>
 function Copy-GDriveItem {
-[CmdletBinding(DefaultParameterSetName='String')]
+[CmdletBinding(SupportsShouldProcess=$true,
+    DefaultParameterSetName='String')]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
@@ -68,6 +69,7 @@ param(
     }
     Write-Verbose "Copy URI: $Uri"
     Write-Verbose "Copy Metadata: $JsonProperty"
-
-    Invoke-RestMethod -Uri $Uri -Method Post -Headers $Headers -Body $JsonProperty @GDriveProxySettings
+    if ($PSCmdlet.ShouldProcess("Copy item $ID")) {
+        Invoke-RestMethod -Uri $Uri -Method Post -Headers $Headers -Body $JsonProperty @GDriveProxySettings
+    }
 }

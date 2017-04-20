@@ -26,7 +26,7 @@
     Set-GDriveItemProperty
 #>
 function Remove-GDriveItem {
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='High')]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
@@ -46,9 +46,13 @@ param(
         $Uri = $GDriveUri + $ID
         Write-Verbose "URI: $Uri"
 
-        Invoke-RestMethod -Uri $Uri -Method Delete -Headers $Headers @GDriveProxySettings
+        if ($PSCmdlet.ShouldProcess("Remove Item $ID")) {
+            Invoke-RestMethod -Uri $Uri -Method Delete -Headers $Headers @GDriveProxySettings
+        }
     }
     else {
-        Set-GDriveItemProperty @PSBoundParameters -JsonProperty '{ "trashed":"true" }'
+        if ($PSCmdlet.ShouldProcess("Move Item $ID to trash")) {
+            Set-GDriveItemProperty @PSBoundParameters -JsonProperty '{ "trashed":"true" }'
+        }
     }
 }

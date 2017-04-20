@@ -24,7 +24,7 @@
     https://developers.google.com/drive/v3/reference/files#resource
 #>
 function Set-GDriveItemProperty {
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess=$true)]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
@@ -44,5 +44,7 @@ param(
     $Uri = $GDriveUri + $ID
     Write-Verbose "URI: $Uri"
 
-    Invoke-RestMethod -Uri $Uri -Method Patch -Headers $Headers -Body $JsonProperty @GDriveProxySettings
+    if ($PSCmdlet.ShouldProcess("Set property for item $ID")) {
+        Invoke-RestMethod -Uri $Uri -Method Patch -Headers $Headers -Body $JsonProperty @GDriveProxySettings
+    }
 }
