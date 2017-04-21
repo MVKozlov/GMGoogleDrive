@@ -3,6 +3,9 @@
     Exchange Authorization Code to Access and Refresh Tokens
 .DESCRIPTION
     Exchange Authorization Code to Access and Refresh Tokens
+
+    NOT intended for use in scripts! Only cmdline with UI and real user behind the keyboard
+
 .PARAMETER ClientID
     OAuth2 Client ID
 .PARAMETER ClientSecret
@@ -20,7 +23,7 @@
 .NOTES
     Author: Max Kozlov
 .LINK
-    Request-GDriveAccessToken
+    Get-GDriveAccessToken
     Request-GDriveAuthorizationCode
     Revoke-GDriveToken
     https://developers.google.com/identity/protocols/OAuth2

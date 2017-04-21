@@ -7,12 +7,12 @@
     Folder ID in which item will be searched
 .PARAMETER AllResults
     Collect all results in one output
+.PARAMETER OrderBy
+    Set output order
 .PARAMETER NextPageToken
     Supply NextPage Token from Previous paged search
 .PARAMETER PageSize
     Set Page Size for paged search
-.PARAMETER OrderBy
-    Set output order
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -33,9 +33,6 @@ param(
     [Parameter(ParameterSetName='All')]
     [switch]$AllResults,
 
-    [Parameter(ParameterSetName='Next')]
-    [string]$NextPageToken,
-
     [ValidateSet(    'createdTime', 'folder', 'modifiedByMeTime', 'modifiedTime', 'name', 'quotaBytesUsed', 'recency',
                     'sharedWithMeTime', 'starred', 'viewedByMeTime',
                     'createdTime desc', 'folder desc', 'modifiedByMeTime desc', 'modifiedTime desc', 'name desc', 'quotaBytesUsed desc', 'recency desc',
@@ -43,12 +40,18 @@ param(
     )]
     [string[]]$OrderBy,
 
+    [Parameter(ParameterSetName='Next')]
+    [string]$NextPageToken,
+
+    [ValidateRange(1,1000)]
+    [int]$PageSize = 100,
+
     [Parameter(Mandatory)]
     [string]$AccessToken
 )
     if ($PSBoundParameters.ContainsKey('ParentID')) {
         $PSBoundParameters['Query'] = "'$ParentID'+in+parents"
-        $PSBoundParameters.Remove('ParentID')
+        [void]$PSBoundParameters.Remove('ParentID')
     }
     else {
         $PSBoundParameters['Query'] = ''

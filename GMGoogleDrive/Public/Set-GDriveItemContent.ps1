@@ -182,22 +182,22 @@ function Set-GDriveItemContent {
             Write-Verbose "Use Resume ID $ResumeID"
             $WebRequestParams.Uri += '&upload_id=' + $ResumeID
             $WebRequestParams.Method = 'Put'
-            $WebRequestParams.Remove('Body')
+            [void]$WebRequestParams.Remove('Body')
             $WebRequestParams.Headers['Content-Range'] = 'bytes */{0}' -f $stream.Length
         }
         Write-Verbose ('Metadata upload, resumable, {0} bytes, {1}' -f $stream.Length, $ContentType)
+        $uploadString = 'Uploading ' + $PSCmdlet.ParameterSetName -replace '(Name|Meta)'
+        if ($PSCmdlet.ParameterSetName -match 'Name')   { $uploadString += " named '$Name'" }
+        if ($PSCmdlet.ParameterSetName -match 'file')   { $uploadString += " from [$InFile]" }
+        elseif ($PSCmdlet.ParameterSetName -match 'string') { $uploadString += " from [string]" }
+        elseif ($PSCmdlet.ParameterSetName -match 'data')   { $uploadString += " from [byte[] array]" }
 
         if ($ShowProgress) {
-            $uploadString = 'Uploading ' + $PSCmdlet.ParameterSetName -replace '(Name|Meta)'
-            if ($PSCmdlet.ParameterSetName -match 'Name')   { $uploadString += " named '$Name'" }
-            if ($PSCmdlet.ParameterSetName -match 'file')   { $uploadString += " from [$InFile]" }
-            elseif ($PSCmdlet.ParameterSetName -match 'string') { $uploadString += " from [string]" }
-            elseif ($PSCmdlet.ParameterSetName -match 'data')   { $uploadString += " from [byte[] array]" }
             Write-Progress -Activity $uploadString -Status 'Metadata upload' -PercentComplete 1
         }
         $wr = $null
         try {
-            if ($PSCmdlet.ShouldProcess($uploadString)) {
+            if ($PSCmdlet.ShouldProcess($ID, $uploadString)) {
                 $wr = Invoke-WebRequest @WebRequestParams @GDriveProxySettings
             }
         }
@@ -231,7 +231,7 @@ function Set-GDriveItemContent {
                 }
                 $WebRequestParams.Method = 'Put'
 
-                if ($PSCmdlet.ShouldProcess($uploadString)) {
+                if ($PSCmdlet.ShouldProcess($ID, $uploadString)) {
                     if ($UploadedSize -eq 0 -and
                         $stream.Length -le $ChunkSize -and
                         ($PSCmdlet.ParameterSetName -notin 'fileName','fileMeta'))

@@ -115,7 +115,7 @@ param(
                     try {
                         $resp_stream.CopyTo($stream)
                         if ($PSCmdlet.ParameterSetName -ne 'File') {
-                            $buffer = $stream.GetBuffer()
+                            $buffer = $stream.ToArray()
                             if ($Raw) {
                                 Write-Verbose "Memory to raw byte[]"
                                 $buffer

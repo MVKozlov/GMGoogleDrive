@@ -41,20 +41,20 @@ param(
                        Write-Error 'Invalid proxy URI, may be you forget http:// prefix ?'
                 }
                 else {
-                    $GDriveProxySettings.Remove('Proxy')
+                    [void]$GDriveProxySettings.Remove('Proxy')
                 }
             }
             if ($ProxyCredential) {
                 $GDriveProxySettings.ProxyCredential = $ProxyCredential
             }
             else {
-                $GDriveProxySettings.Remove('ProxyCredential')
+                [void]$GDriveProxySettings.Remove('ProxyCredential')
             }
             if ($ProxyUseDefaultCredentials) {
                 $GDriveProxySettings.ProxyUseDefaultCredentials = $ProxyUseDefaultCredentials
             }
             else {
-                $GDriveProxySettings.Remove('ProxyUseDefaultCredentials')
+                [void]$GDriveProxySettings.Remove('ProxyUseDefaultCredentials')
             }
         }
     }

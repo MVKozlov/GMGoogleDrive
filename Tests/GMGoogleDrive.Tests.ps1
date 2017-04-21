@@ -39,7 +39,7 @@ Describe "GMGoogleDrive" {
             $Commands -contains "New-GDriveItem"                    | Should be $True
             $Commands -contains "Remove-GDriveItem"                 | Should be $True
             $Commands -contains "Rename-GDriveItem"                 | Should be $True
-            $Commands -contains "Request-GDriveAccessToken"         | Should be $True
+            $Commands -contains "Get-GDriveAccessToken"             | Should be $True
             $Commands -contains "Request-GDriveAuthorizationCode"   | Should be $True
             $Commands -contains "Request-GDriveRefreshToken"        | Should be $True
             $Commands -contains "Revoke-GDriveToken"                | Should be $True
@@ -50,7 +50,7 @@ Describe "GMGoogleDrive" {
     }
 }
 
-Describe "GDriveProxySetting"         {
+Describe "GDriveProxySetting" {
     Context "Add Proxy" {
         It "Should set proxy" {
             { Set-GDriveProxySetting -Proxy 'http://ya.ru:800/' } | Should Not Throw
@@ -74,30 +74,33 @@ Describe "GDriveProxySetting"         {
     }
 }
 
-Describe "Request-GDriveAuthorizationCode"{
-    It "Does not test it" -Skip {
-        $true | Should Be $false
+Describe "Request-GDriveAuthorizationCode" {
+    It "Should be MANUAL operation and you lose your refresh token, so does NOT test it" -Skip {
+        { $script:code = Request-GDriveAuthorizationCode -ClientID $oauth_json.web.client_id -ClientSecret $oauth_json.web.client_secret -Automatic } | Should Not Throw
+        $code | Should Not BeNullOrEmpty
     }
 }
-Describe "Request-GDriveRefreshToken"     {
-    It "Does not test it" -Skip {
-        $true | Should Be $false
+Describe "Request-GDriveRefreshToken" {
+    It "Should be MANUAL operation and you lose your refresh token, so does NOT test it" -Skip {
+        { $global:refresh = Request-GDriveRefreshToken -ClientID $oauth_json.web.client_id -ClientSecret $oauth_json.web.client_secret -AuthorizationCode $code } | Should Not Throw
+        $refresh    | Should Not BeNullOrEmpty
+        $refresh.refresh_token  | Should Not BeNullOrEmpty
     }
 }
-Describe "Request-GDriveAccessToken"      {
+Describe "Get-GDriveAccessToken" {
     $params = @{
         ClientID = $oauth_json.web.client_id
         ClientSecret = $oauth_json.web.client_secret
         RefreshToken = $refresh.refresh_token
     }
     It "Should Request Access Token" {
-        { $script:access = Request-GDriveAccessToken @params } | Should Not Throw
+        { $script:access = Get-GDriveAccessToken @params } | Should Not Throw
         $access | Should Not BeNullOrEmpty
         $access.access_token | Should Not BeNullOrEmpty
     }
 }
 
-Describe "Get-GDriveSummary"              {
+Describe "Get-GDriveSummary" {
     It "should return drive summary" {
         { $script:summary = Get-GDriveSummary -AccessToken $access.access_token } | Should Not Throw
         $summary | Should Not BeNullOrEmpty
@@ -105,14 +108,7 @@ Describe "Get-GDriveSummary"              {
     }
 }
 
-Describe "Get-GDriveChildItem"            {
-    It "should return item list" {
-        { $script:list = Get-GDriveChildItem -AccessToken $access.access_token } | Should Not Throw
-        $list | Should Not BeNullOrEmpty
-        $list.files | Should Not BeNullOrEmpty
-    }
-}
-Describe "New-GDriveFolder"               {
+Describe "New-GDriveFolder" {
     It "should create test folder" {
         { $script:folder = New-GDriveFolder -AccessToken $access.access_token -Name "PesterTestFolder" } | Should Not Throw
         $folder | Should Not BeNullOrEmpty
@@ -121,7 +117,7 @@ Describe "New-GDriveFolder"               {
         $folder.mimeType | Should Be "application/vnd.google-apps.folder"
     }
 }
-Describe "New-GDriveItem"                 {
+Describe "New-GDriveItem" {
     It "should create empty file" {
         { $script:file1 = New-GDriveItem -AccessToken $access.access_token -Name "PesterTestFile1" -ParentID $folder.id } | Should Not Throw
         $file1.id | Should Not BeNullOrEmpty
@@ -129,8 +125,19 @@ Describe "New-GDriveItem"                 {
         $file1.mimeType | Should Be "application/octet-stream"
     }
 }
+Describe "Set-GDriveItemContent" {
+    $params = @{
+        AccessToken = $access.access_token
+        ContentType = 'text/plain'
+    }
+    It "should set file1 content"  {
+        { $script:file1c = Set-GDriveItemContent @params -ID $file1.id -StringContent 'test file1' | Select -Expand Item } | Should Not Throw
+        $file1c | Should Not BeNullOrEmpty
+        $file1c.id | Should Be $file1.id
+    }
+}
 
-Describe "Add-GDriveItem"                 {
+Describe "Add-GDriveItem" {
     $params = @{
         AccessToken = $access.access_token
         ParentID = $folder.id 
@@ -153,7 +160,7 @@ Describe "Add-GDriveItem"                 {
         }
     }
     Context "file" {
-        'test file4' | Set-Content -Path $tmpfile
+        'test file4' | Set-Content -Path $tmpfile -Encoding ASCII
         It "should create file from file" {
             { $script:file4 = Add-GDriveItem @params -Name "PesterTestFile4" -InFile $tmpfile | Select -Expand Item } | Should Not Throw
             $file4.id | Should Not BeNullOrEmpty
@@ -162,42 +169,90 @@ Describe "Add-GDriveItem"                 {
         }
     }
 }
-Describe "Set-GDriveItemProperty"         {
+Describe "Set-GDriveItemProperty" {
+        It "should set file1 description" {
+            { Set-GDriveItemProperty -AccessToken $access.access_token -ID $file1.id -JsonProperty '{ "description": "file1 description" }' } | Should Not Throw
+        }
 }
-Describe "Get-GDriveItemProperty"         {
+Describe "Get-GDriveItemProperty" {
+        It "should get file1 description" {
+            { $script:file1d = Get-GDriveItemProperty -AccessToken $access.access_token -ID $file1.id -Property description } | Should Not Throw
+            $file1d | Should Not BeNullOrEmpty
+            $file1d.id | Should Be $file1.id
+            $file1d.description | Should Be 'file1 description'
+        }
 }
-Describe "Copy-GDriveItem"                {
+Describe "Copy-GDriveItem" {
         It "should create file from existing item" {
             { $script:file5 = Copy-GDriveItem -AccessToken $access.access_token -ID $file1.id -Name "PesterTestFile1a" } | Should Not Throw
             $file5.id | Should Not BeNullOrEmpty
             $file5.name | Should Be "PesterTestFile1a"
         }
 }
-Describe "Rename-GDriveItem"              {
+Describe "Rename-GDriveItem" {
         It "should rename file" {
             { $script:file5 = Rename-GDriveItem -AccessToken $access.access_token -ID $file5.id -NewName "PesterTestFile5" } | Should Not Throw
             $file5.id | Should Not BeNullOrEmpty
             $file5.name | Should Be "PesterTestFile5"
         }
 }
-Describe "Find-GDriveItem"                {
-        It "should find 5 files" {
-            { $script:files = Find-GDriveItem -AccessToken $access.access_token -Query 'name contains "PesterTestFile"' } | Should Not Throw
-            $files.files.Count | Should Be 5
-        }
-}
-Describe "Get-GDriveItemContent"          {
-}
-Describe "Set-GDriveItemContent"          {
-}
-Describe "Move-GDriveItem"                {
+Describe "Move-GDriveItem" {
         It "should move file1 to root" {
             { $script:file1a = Move-GDriveItem -AccessToken $access.access_token -ID $file1.id -NewParentID 'root' } | Should Not Throw
             $file1a.parents.Count | Should Be 1
             $file1a.parents[0] | Should Be $summary.rootFolderId
         }
 }
-Describe "Remove-GDriveItem"              {
+Describe "Find-GDriveItem" {
+        It "should find 5 files" {
+            { $script:files = Find-GDriveItem -AccessToken $access.access_token -Query 'name contains "PesterTestFile"' } | Should Not Throw
+            $files.files.Count | Should Be 5
+        }
+}
+Describe "Get-GDriveChildItem" {
+    It "should return item list" {
+        { $script:list = Get-GDriveChildItem -AccessToken $access.access_token -ParentID $folder.id  } | Should Not Throw
+        $list | Should Not BeNullOrEmpty
+        $list.files | Should Not BeNullOrEmpty
+        $list.files.Count | Should Be 4
+    }
+    It "should return item list (all)" {
+        { $script:list = Get-GDriveChildItem -AccessToken $access.access_token -ParentID $folder.id -AllResults -PageSize 2 } | Should Not Throw
+        $list | Should Not BeNullOrEmpty
+        $list.files | Should Not BeNullOrEmpty
+        $list.files.Count | Should Be 4
+    }
+}
+Describe "Get-GDriveItemContent" {
+    $params = @{
+        AccessToken = $access.access_token
+    }
+    Context "string" {
+        It "should get file content as string" {
+            { $script:content = Get-GDriveItemContent @params -ID $file5.id } | Should Not Throw
+            $content | Should Be 'test file1'
+        }
+        It "should get partial content as string" {
+            { $script:content = Get-GDriveItemContent @params -ID $file5.id -Offset 3 -Length 5 } | Should Not Throw
+            $content | Should Be 't fil'
+        }
+    }
+    Context "byte[]" {
+        It "should get file content as byte[]" {
+            { $script:content = Get-GDriveItemContent @params -ID $file4.id -Raw } | Should Not Throw
+            [Text.Encoding]::ASCII.GetString($content) | Should Be "test file4`r`n"
+        }
+    }
+    Context "file" {
+        'test file4' | Set-Content -Path $tmpfile
+        It "should get file content and save it to file" {
+            { Get-GDriveItemContent @params -ID $file3.id -OutFile $tmpfile } | Should Not Throw
+            $content = Get-Content -Path $tmpfile
+            $content | Should Be 'test file3'
+        }
+    }
+}
+Describe "Remove-GDriveItem" {
     Context "Remove Items" {
         It "should trash file1" {
             { Remove-GDriveItem -AccessToken $access.access_token -Confirm:$false -ID $file1.id } | Should Not Throw
@@ -219,7 +274,7 @@ Describe "Remove-GDriveItem"              {
         }
     }
 }
-Describe "Revoke-GDriveToken - not test it because revoke ANY token leads to revoking all tokens" {
+Describe "Revoke-GDriveToken - you lose your refresh token, so does NOT test it" {
     It "should revoke access Token" -Skip {
         { Revoke-GDriveToken -Token $access.access_token -Confirm:$false } | Should Not Throw
     }

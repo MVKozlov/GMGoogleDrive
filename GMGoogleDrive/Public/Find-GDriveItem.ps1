@@ -7,12 +7,12 @@
     Search Query
 .PARAMETER AllResults
     Collect all results in one output
+.PARAMETER OrderBy
+    Set output order
 .PARAMETER NextPageToken
     Supply NextPage Token from Previous paged search
 .PARAMETER PageSize
     Set Page Size for paged search
-.PARAMETER OrderBy
-    Set output order
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -37,12 +37,6 @@ param(
     [Parameter(ParameterSetName='All')]
     [switch]$AllResults,
 
-    [Parameter(ParameterSetName='Next')]
-    [string]$NextPageToken,
-
-    [ValidateRange(1,1000)]
-    [int]$PageSize = 100,
-
     #TODO: Properties
 
     [ValidateSet(    'createdTime', 'folder', 'modifiedByMeTime', 'modifiedTime', 'name', 'quotaBytesUsed', 'recency',
@@ -51,6 +45,12 @@ param(
                     'sharedWithMeTime desc', 'starred desc', 'viewedByMeTime desc'
     )]
     [string[]]$OrderBy,
+
+    [Parameter(ParameterSetName='Next')]
+    [string]$NextPageToken,
+
+    [ValidateRange(1,1000)]
+    [int]$PageSize = 100,
 
     [Parameter(Mandatory)]
     [string]$AccessToken
@@ -73,21 +73,24 @@ param(
         [void]$Params.Add('orderBy=' + ($OrderBy -replace ' ','+' -join ','))
     }
     if ($AllResults) {
-        $PSBoundParameters.Remove('AllResults')
+        [void]$PSBoundParameters.Remove('AllResults')
         $files = New-Object System.Collections.ArrayList
+        $baselist = $null
         do {
             $PSBoundParameters['NextPageToken'] = $NextPageToken
             $list = Find-GDriveItem @PSBoundParameters
             if ($null -eq $list) { break }
+            $baselist = $list
             $NextPageToken = $list.nextPageToken
             $files.AddRange($list.files)
         } while ($NextPageToken)
-        if ($null -eq $list) {
-            $list.files = $files.ToArray()
-            $list
+        if ($null -ne $baselist) {
+            $baselist.files = $files.ToArray()
+            $baselist
         }
     }
     else {
-        Invoke-RestMethod -Uri ('{0}?{1}' -f $GDriveUri, ($Params -join '&')) -Method Get -Headers $Headers @GDriveProxySettings
+        $Uri = '{0}?{1}' -f $GDriveUri, ($Params -join '&')
+        Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
     }
 }

@@ -4,6 +4,9 @@
 .DESCRIPTION
     Request Authorization code to work with GoogleDrive
     If user logged into google account or username/password supplied that can be automatic
+
+    NOT intended for use in scripts! Only cmdline with UI and real user behind the keyboard
+
 .PARAMETER ClientID
     OAuth2 Client ID
 .PARAMETER ClientSecret
@@ -27,7 +30,7 @@
 .NOTES
     Author: Max Kozlov
 .LINK
-    Request-GDriveAccessToken
+    Get-GDriveAccessToken
     Request-GDriveRefreshToken
     Revoke-GDriveToken
     https://developers.google.com/identity/protocols/OAuth2
@@ -124,7 +127,7 @@ function Request-GDriveAuthorizationCode {
                         $accessbutton = $object
                     }
                     'logincaptcha' {
-                        Write-Debug 'Captcha found !'
+                        Write-Warning 'Captcha found !'
                         $ie.Visible = $true
                         $Automatic = $false
                     }
@@ -148,6 +151,7 @@ function Request-GDriveAuthorizationCode {
                 }
                 else {
                     Write-Debug 'Username not present'
+                    Write-Warning 'Username not found, turn off Automatic'
                     $ie.Visible = $true
                     $Automatic = $false
                 }
@@ -164,6 +168,7 @@ function Request-GDriveAuthorizationCode {
                 }
                 else {
                     Write-Debug 'Password not present'
+                    Write-Warning 'Password not found, turn off Automatic'
                     $ie.Visible = $true
                     $Automatic = $false
                 }

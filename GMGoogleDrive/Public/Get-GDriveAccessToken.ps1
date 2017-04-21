@@ -24,7 +24,7 @@
     https://developers.google.com/identity/protocols/OAuth2InstalledApp
     https://developers.google.com/identity/protocols/OAuth2WebServer
 #>
-function Request-GDriveAccessToken {
+function Get-GDriveAccessToken {
 [CmdletBinding()]
     param(
         [Parameter(Mandatory, Position=0)]

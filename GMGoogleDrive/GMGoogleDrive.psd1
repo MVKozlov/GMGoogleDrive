@@ -73,7 +73,7 @@ PowerShellVersion = '4.0'
 FunctionsToExport = @(
     'Request-GDriveAuthorizationCode',
     'Request-GDriveRefreshToken',
-    'Request-GDriveAccessToken',
+    'Get-GDriveAccessToken',
     'Revoke-GDriveToken',
 
     'Get-GDriveSummary',

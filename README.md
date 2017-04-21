@@ -39,7 +39,7 @@ $refresh = Request-GDriveRefreshToken -ClientID $oauth_json.web.client_id `
 12. Authentication Token need to be refreshed every hour, so
 
 ``` powershell
-$access = Request-GDriveAccessToken -ClientID $oauth_json.web.client_id `
+$access = Get-GDriveAccessToken -ClientID $oauth_json.web.client_id `
   -ClientSecret $oauth_json.web.client_secret `
   -RefreshToken $refresh.refresh_token
 ```
@@ -60,4 +60,4 @@ Get-GDriveItemProperty -AccessToken $access.access_token -ID $file.id -Property 
 ### Error Handling
 Error handling left for self-production :)
 
-Cmdlets exiting at the first error, but, for example if Metadata Upload succeded but content upload failed, **UploadID** returned for resume operations later
+Cmdlets exiting at the first error, but, for example if Metadata Upload succeded but content upload failed, _UploadID_ as **ResumeID** returned for resume operations later
