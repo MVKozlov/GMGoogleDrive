@@ -80,7 +80,7 @@ param(
 
     $wr.Method = 'Get'
     $wr.ContentType = "application/json"
-    $wr.Headers.Add("Authorization", "Bearer $($access.access_token)")
+    $wr.Headers.Add("Authorization", "Bearer $($AccessToken)")
     Write-Verbose "ParameterSetName: $($PSCmdlet.ParameterSetName)"
     Write-Verbose "Content Url: $Uri"
     if ($PSBoundParameters.ContainsKey('Offset') -and $PSBoundParameters.ContainsKey('Length')) {
