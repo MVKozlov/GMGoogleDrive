@@ -31,7 +31,7 @@
 .EXAMPLE
     #Named Raw data upload with ParentID
     [byte[]]$Content = Get-Content D:\SomeDocument.doc -Encoding Bytes
-    $ParentFolder = Find-GDriveItem -AccessToken $access.access_token -Query 'name="myparentfolder"'
+    $ParentFolder = Find-GDriveItem -AccessToken $access_token -Query 'name="myparentfolder"'
     Add-GDriveItem -AccessToken $access_token -RawContent -Name SomeDocument.doc -ParentID $ParentFolder.files.id
 .EXAMPLE
     #String based upload with metadata
