@@ -61,3 +61,11 @@ Get-GDriveItemProperty -AccessToken $access.access_token -ID $file.id -Property 
 Error handling left for self-production :)
 
 Cmdlets exiting at the first error, but, for example if Metadata Upload succeded but content upload failed, _UploadID_ as **ResumeID** returned for resume operations later
+
+If Error catched, error record can be decoded by Get-GDriveError
+``` powershell
+ # save error to variable
+ try { Get-GDriveItemProperty -AccessToken 'error token' -id 'error id' } catch { $err = $_ }
+ # decode error
+ Get-GDriveError $err
+```

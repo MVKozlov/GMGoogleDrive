@@ -25,7 +25,7 @@ Describe "GMGoogleDrive" {
     Context "misc" {
         It 'should load all functions' {
             $Commands = Get-Command -CommandType Function -Module GMGoogleDrive | Select-Object -ExpandProperty Name
-            $Commands.Count | Should be 20
+            $Commands.Count | Should be 21
             $Commands -contains "Get-GDriveSummary"                 | Should be $True
             $Commands -contains "Add-GDriveItem"                    | Should be $True
             $Commands -contains "Copy-GDriveItem"                   | Should be $True
@@ -46,6 +46,7 @@ Describe "GMGoogleDrive" {
             $Commands -contains "Set-GDriveItemContent"             | Should be $True
             $Commands -contains "Set-GDriveItemProperty"            | Should be $True
             $Commands -contains "Set-GDriveProxySetting"            | Should be $True
+            $Commands -contains "Get-GDriveError"                   | Should be $True
         }
     }
 }
@@ -280,6 +281,15 @@ Describe "Revoke-GDriveToken - you lose your refresh token, so does NOT test it"
     }
     It "should not retrieve files" -Skip {
         { Get-GDriveChildItem -AccessToken $access.access_token } | Should Throw
+    }
+}
+
+Describe "Get-GDriveError" {
+    It "should return error object" {
+        try { Get-GDriveItemProperty -AccessToken 'error token' -id 'error id' } catch { $err = $_ }
+        { $script:rec = Get-GDriveError $err } | Should Not Throw
+        $rec.error | Should Not BeNullOrEmpty
+        $rec.error.code | Should Be 401
     }
 }
 

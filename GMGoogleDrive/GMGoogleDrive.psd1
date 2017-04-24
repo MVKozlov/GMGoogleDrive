@@ -13,7 +13,7 @@
 RootModule = 'GMGoogleDrive'
 
 # Version number of this module.
-ModuleVersion = '1.0.1.1'
+ModuleVersion = '1.0.2.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -77,6 +77,7 @@ FunctionsToExport = @(
     'Revoke-GDriveToken',
 
     'Get-GDriveSummary',
+    'Get-GDriveError',
 
     'Find-GDriveItem',
     'Get-GDriveChildItem',
