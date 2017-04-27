@@ -285,9 +285,27 @@ Describe "Revoke-GDriveToken - you lose your refresh token, so does NOT test it"
 }
 
 Describe "Get-GDriveError" {
-    It "should return error object" {
+    It "should return RuntimeException error object" {
+        try { throw 'err1' } catch { $err = $_ }
+        { $script:rec = Get-GDriveError $err } | Should Not Throw
+        $rec.Type | Should Not BeNullOrEmpty
+        $rec.Type.FullName | Should Be 'System.Management.Automation.RuntimeException'
+        $rec.StatusCode | Should BeNullOrEmpty
+        $rec.Message | Should Be 'err1'
+    }
+    It "should return WebException error object" {
+        try { invoke-restmethod http://ya.ru/notexistenturl } catch { $err = $_ }
+        { $script:rec = Get-GDriveError $err -WarningAction SilentlyContinue } | Should Not Throw
+        $rec.Type | Should Not BeNullOrEmpty
+        $rec.Type.FullName | Should Be 'System.Net.WebException'
+        $rec.StatusCode | Should Be 404
+    }
+    It "should return Fully decoded error object" {
         try { Get-GDriveItemProperty -AccessToken 'error token' -id 'error id' } catch { $err = $_ }
         { $script:rec = Get-GDriveError $err } | Should Not Throw
+        $rec.Type | Should Not BeNullOrEmpty
+        $rec.Type.FullName | Should Be 'System.Net.WebException'
+        $rec.StatusCode | Should Be 401
         $rec.error | Should Not BeNullOrEmpty
         $rec.error.code | Should Be 401
     }

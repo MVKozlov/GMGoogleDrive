@@ -6,7 +6,7 @@
 .PARAMETER Error
     Error record to decode
 .PARAMETER Exception
-    WebException object to decode
+    Exception object to decode
 .OUTPUTS
     Json with error item as PSObject
 .EXAMPLE
@@ -23,39 +23,58 @@ param(
     [System.Management.Automation.ErrorRecord]$Error,
 
     [Parameter(Mandatory, Position=0, ParameterSetName='ex')]
-    [System.Net.WebException]$Exception
+    [Exception]$Exception
 )
-
+    $result = [PSCustomObject]@{
+        Type = $null
+        StatusCode = $null
+        Message = ''
+        Error = ''
+    }
     if ($Error) {
-        $response = $Error.Exception.Response
+        $Exception = $Error.Exception
     }
-    else {
-        $response = $Exception.Response
-    }
-    try {
-        $Encoding = [Text.Encoding]::GetEncoding($response.CharacterSet)
-    }
-    catch {
-        $Encoding = [Text.Encoding]::UTF8
-    }
-    try {
-        Write-Verbose "StatusCode: $($response.StatusCode)"
-        Write-Verbose "ContentLength: $($response.ContentLength)"
-        Write-Verbose "ContentType: $($response.ContentType)"
-        Write-Verbose "CharacterSet: $($response.CharacterSet)"
-        $stream = $err.Exception.Response.GetResponseStream()
-        try {
-            $Encoding.GetString($stream.ToArray()) | ConvertFrom-Json
+    if ($Exception) {
+        $result.Type = $Exception.GetType()
+        $result.Message = $Exception.Message
+        if ($Exception -is [System.Net.WebException]) {
+            $response = $Exception.Response
+            $result.StatusCode = $response.StatusCode
+            $result.Message = $response.StatusDescription
+            try {
+                $Encoding = [Text.Encoding]::GetEncoding($response.CharacterSet)
+            }
+            catch {
+                $Encoding = [Text.Encoding]::UTF8
+            }
+            try {
+                Write-Verbose "StatusCode: $($response.StatusCode)"
+                Write-Verbose "ContentLength: $($response.ContentLength)"
+                Write-Verbose "ContentType: $($response.ContentType)"
+                Write-Verbose "CharacterSet: $($response.CharacterSet)"
+                $stream = $response.GetResponseStream()
+
+                try {
+                    $s = $Encoding.GetString($stream.ToArray())
+                    try {
+                        $result.Error = $s | ConvertFrom-Json | Select-Object -ExpandProperty error
+                    }
+                    catch {
+                        Write-Warning "Can't decode error"
+                    }
+                }
+                finally {
+        # ?
+        #            $stream.Close()
+        #            $stream.Dispose()
+                }
+            }
+            finally {
+        # ?
+        #        $response.Close()
+        #        $response.Dispose()
+            }
         }
-        finally {
-# ?
-#            $stream.Close()
-#            $stream.Dispose()
-        }
     }
-    finally {
-# ?
-#        $response.Close()
-#        $response.Dispose()
-    }
+    $result
 }
