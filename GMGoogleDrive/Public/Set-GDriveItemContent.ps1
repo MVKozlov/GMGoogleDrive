@@ -256,7 +256,7 @@ function Set-GDriveItemContent {
                         do {
                             [long]$nextSize = [Math]::Min($UploadedSize + $ChunkSize, $stream.Length)
                             $Range = "bytes $($UploadedSize)-$($nextSize-1)/$($stream.Length)"
-                            $Length = [Math]::Min($ChunkSize, $stream.Length - $UploadedSize)
+                            $Length = [Math]::Min($stream.Length - $UploadedSize, $ChunkSize)
                             $WebRequestParams.Headers = @{
                                 "Authorization"  = "Bearer $AccessToken"
                                 "Content-Type"   = $ContentType
