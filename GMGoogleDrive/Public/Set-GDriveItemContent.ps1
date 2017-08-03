@@ -217,11 +217,11 @@ function Set-GDriveItemContent {
                     $WebRequestParams['Uri'] = $wr.Headers['Location']
                 }
 
-                $UploadedSize = 0
+                [long]$UploadedSize = 0
                 Write-Verbose "Received Range: $($wr.Headers['Range'])"
                 if ($wr.Headers['Range'] -match 'bytes=(\d+)-(\d+)')
                 {
-                    $UploadedSize = ([int]$matches[2]) + 1
+                    $UploadedSize = ([long]$matches[2]) + 1
                     Write-Verbose "Stream Position: $($stream.Position), UploadedSize:$($UploadedSize)"
                     if ($stream.Position -ne $UploadedSize)
                     {
@@ -254,7 +254,7 @@ function Set-GDriveItemContent {
                         Write-Verbose 'Multiple requests upload'
                         [byte[]]$buffer = New-Object byte[] $ChunkSize
                         do {
-                            $nextSize = [Math]::Min($UploadedSize + $ChunkSize, $stream.Length)
+                            [long]$nextSize = [Math]::Min($UploadedSize + $ChunkSize, $stream.Length)
                             $Range = "bytes $($UploadedSize)-$($nextSize-1)/$($stream.Length)"
                             $Length = [Math]::Min($ChunkSize, $stream.Length - $UploadedSize)
                             $WebRequestParams.Headers = @{
@@ -283,7 +283,7 @@ function Set-GDriveItemContent {
                                         Write-Verbose "Received Range: $($wr.Headers['Range'])"
                                         if ($wr.Headers['Range'] -match 'bytes=(\d+)-(\d+)')
                                         {
-                                            $UploadedSize = ([int]$matches[2]) + 1
+                                            $UploadedSize = ([long]$matches[2]) + 1
                                             Write-Verbose "Stream Position: $($stream.Position), UploadedSize:$($UploadedSize)"
                                             if ($stream.Position -ne $UploadedSize)
                                             {
