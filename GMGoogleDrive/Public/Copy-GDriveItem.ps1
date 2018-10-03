@@ -58,7 +58,7 @@ param(
 
     # Full property set will be supported after the rain on Thursday ;-)
     $Property = 'kind','id','name','mimeType','parents'
-    $Uri = '{0}{1}/copy?fields={2}' -f $GDriveUri, $ID, ($Property -join ',')
+    $Uri = '{0}{1}/copy?supportTeamDrives=true&fields={2}' -f $GDriveUri, $ID, ($Property -join ',')
     if ($PSCmdlet.ParameterSetName -eq 'name') {
         if ($ParentID) {
             $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')

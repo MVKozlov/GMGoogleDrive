@@ -65,7 +65,7 @@ param(
     [string]$AccessToken
 )
 
-    $Uri = '{0}{1}?{2}' -f $GDriveUri, $ID, 'alt=media&mimeType=application/octet-stream'
+    $Uri = '{0}{1}?{2}' -f $GDriveUri, $ID, 'alt=media&mimeType=application/octet-stream&supportTeamDrives=true'
     $wr = [System.Net.HttpWebRequest]::Create($Uri)
     if ($GDriveProxySettings.Proxy) {
         $proxy = New-Object System.Net.WebProxy $GDriveProxySettings.Proxy

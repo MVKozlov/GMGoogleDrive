@@ -41,7 +41,7 @@ param(
         "Content-type"  = "application/json"
     }
     # Standart properties always present
-    $Uri = $GDriveUri + $ID
+    $Uri = $GDriveUri + $ID + "?supportsTeamDrives=true"
     Write-Verbose "URI: $Uri"
 
     if ($PSCmdlet.ShouldProcess("Set property for item $ID")) {
