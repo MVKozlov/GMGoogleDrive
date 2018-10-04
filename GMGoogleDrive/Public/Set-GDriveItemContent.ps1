@@ -168,12 +168,12 @@ function Set-GDriveItemContent {
             Write-Verbose "Updating File $ID"
             # Patch instead of Put! docs are wrong? Put give 404
             $WebRequestParams.Method = 'Patch'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?uploadType=resumable&supportsTeamDrive=true&fields=kind,id,name,mimeType,parents"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?supportsTeamDrive=true&uploadType=resumable&fields=kind,id,name,mimeType,parents"
         }
         else {
             Write-Verbose "Creating New file"
             $WebRequestParams.Method = 'Post'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)?uploadType=resumable&supportsTeamDrives=true&fields=kind,id,name,mimeType,parents"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsTeamDrives=true&uploadType=resumable&fields=kind,id,name,mimeType,parents"
         }
         Write-Verbose ("URI: " + $WebRequestParams.Uri)
 
