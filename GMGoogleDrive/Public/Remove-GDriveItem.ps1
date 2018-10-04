@@ -43,7 +43,7 @@ param(
             "Authorization" = "Bearer $AccessToken"
             "Content-type"  = "application/json"
         }
-        $Uri = $GDriveUri + $ID
+        $Uri = $GDriveUri + $ID + "?supportsTeamDrives=true"
         Write-Verbose "URI: $Uri"
 
         if ($PSCmdlet.ShouldProcess("Remove Item $ID")) {

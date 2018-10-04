@@ -56,7 +56,7 @@ function New-GDriveItem {
     }
     # Full property set will be supported after the rain on Thursday ;-)
     $Property = 'kind','id','name','mimeType','parents'
-    $Uri = '{0}?fields={1}' -f $GDriveUri, ($Property -join ',')
+    $Uri = '{0}?supportsTeamDrives=true&fields={1}' -f $GDriveUri, ($Property -join ',')
     Write-Verbose "URI: $Uri"
     Write-Verbose "RequestBody: $JsonProperty"
     if ($PSCmdlet.ShouldProcess("Create new item $Name")) {

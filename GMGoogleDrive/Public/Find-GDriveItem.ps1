@@ -90,7 +90,7 @@ param(
         }
     }
     else {
-        $Uri = '{0}?{1}' -f $GDriveUri, ($Params -join '&')
+        $Uri = '{0}?supportTeamDrives=true&{1}' -f $GDriveUri, ($Params -join '&')
         Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
     }
 }
