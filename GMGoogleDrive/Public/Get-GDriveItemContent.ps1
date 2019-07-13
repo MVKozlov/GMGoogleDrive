@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Get GoogleDrive Item content
 .DESCRIPTION
@@ -57,6 +57,7 @@ param(
 
     [int64]$Offset,
     [int64]$Length,
+    [string]$RevisionID,
 
     [Parameter(ParameterSetName='String')]
     [System.Text.Encoding]$Encoding,
@@ -64,8 +65,8 @@ param(
     [Parameter(Mandatory)]
     [string]$AccessToken
 )
-
-    $Uri = '{0}{1}?{2}' -f $GDriveUri, $ID, 'alt=media&mimeType=application/octet-stream&supportTeamDrives=true'
+    $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
+    $Uri = '{0}{1}{2}?{3}' -f $GDriveUri, $ID, $Revision, 'alt=media&mimeType=application/octet-stream'
     $wr = [System.Net.HttpWebRequest]::Create($Uri)
     if ($GDriveProxySettings.Proxy) {
         $proxy = New-Object System.Net.WebProxy $GDriveProxySettings.Proxy

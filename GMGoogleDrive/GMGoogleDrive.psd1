@@ -13,7 +13,7 @@
 RootModule = 'GMGoogleDrive'
 
 # Version number of this module.
-ModuleVersion = '1.0.2.3'
+ModuleVersion = '1.0.3.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -87,6 +87,7 @@ FunctionsToExport = @(
 
     'Get-GDriveItemContent',
     'Get-GDriveItemProperty',
+    'Get-GDriveItemRevisionList',
     'Set-GDriveItemContent',
     'Set-GDriveItemProperty',
 
