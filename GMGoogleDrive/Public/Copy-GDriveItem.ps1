@@ -28,7 +28,7 @@
     Set-GDriveItemProperty
     Move-GDriveItem
     Rename-GDriveItem
-    https://developers.google.com/drive/v3/reference/files/copy
+    https://developers.google.com/drive/api/v3/reference/files/copy
 #>
 function Copy-GDriveItem {
 [CmdletBinding(SupportsShouldProcess=$true,

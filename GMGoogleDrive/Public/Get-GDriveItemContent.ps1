@@ -40,8 +40,10 @@
 .LINK
     Get-GDriveItemProperty
     Set-GDriveItemContent
-    https://developers.google.com/drive/v3/reference/files/get
-    https://developers.google.com/drive/v3/web/manage-downloads
+    Get-GDriveItemRevisionList
+    https://developers.google.com/drive/api/v3/reference/files/get
+    https://developers.google.com/drive/api/v3/reference/revisions/get
+    https://developers.google.com/drive/api/v3/manage-downloads
 #>
 function Get-GDriveItemContent {
 [CmdletBinding(DefaultParameterSetName='String')]

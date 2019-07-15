@@ -20,8 +20,9 @@
     Set-GDriveItemContent
     Move-GDriveItem
     Rename-GDriveItem
-    https://developers.google.com/drive/v3/reference/files/update
-    https://developers.google.com/drive/v3/reference/files#resource
+    https://developers.google.com/drive/api/v3/reference/files/update
+    https://developers.google.com/drive/api/v3/reference/files#resource
+    https://developers.google.com/drive/api/v3/reference/revisions/update
 #>
 function Set-GDriveItemProperty {
 [CmdletBinding(SupportsShouldProcess=$true)]

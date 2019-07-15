@@ -24,6 +24,8 @@
     Rename-GDriveItem
     Move-GDriveItem
     Set-GDriveItemProperty
+    https://developers.google.com/drive/api/v3/reference/files/delete
+    https://developers.google.com/drive/api/v3/reference/revisions/delete
 #>
 function Remove-GDriveItem {
 [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='High')]
@@ -36,7 +38,6 @@ param(
     [Parameter(Mandatory)]
     [string]$AccessToken
 )
-#https://developers.google.com/drive/v3/reference/files/delete
 
     if ($Permanently) {
         $Headers = @{

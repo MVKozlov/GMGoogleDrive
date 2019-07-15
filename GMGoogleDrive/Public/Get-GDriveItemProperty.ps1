@@ -20,8 +20,8 @@
     Get-GDriveItemContent
     Set-GDriveItemProperty
     Set-GDriveItemContent
-    https://developers.google.com/drive/v3/reference/files/get
-    https://developers.google.com/drive/v3/reference/files#resource
+    https://developers.google.com/drive/api/v3/reference/files/get
+    https://developers.google.com/drive/api/v3/reference/files#resource
 #>
 function Get-GDriveItemProperty {
 [CmdletBinding()]
