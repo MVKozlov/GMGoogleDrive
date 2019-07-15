@@ -84,6 +84,7 @@ FunctionsToExport = @(
     'New-GDriveFolder',
     'New-GDriveItem',
     'Add-GDriveItem',
+    'Add-GDriveFolder',
 
     'Get-GDriveItemContent',
     'Get-GDriveItemProperty',
