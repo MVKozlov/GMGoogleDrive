@@ -95,6 +95,7 @@ FunctionsToExport = @(
     'Rename-GDriveItem',
     'Copy-GDriveItem',
     'Remove-GDriveItem',
+    'Clear-GDriveTrash',
 
     'Get-GDriveProxySetting',
     'Set-GDriveProxySetting'
