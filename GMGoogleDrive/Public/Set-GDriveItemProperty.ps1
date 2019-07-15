@@ -5,6 +5,8 @@
     Updates GoogleDrive Item metadata
 .PARAMETER ID
     File ID to update
+.PARAMETER RevisionID
+    File Revision ID to set property (Version history)
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
 .PARAMETER AccessToken
@@ -30,6 +32,8 @@ param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
 
+    [string]$RevisionID,
+
     [Parameter(Mandatory, Position=1)]
     [Alias('Metadata')]
     [string]$JsonProperty,
@@ -41,8 +45,8 @@ param(
         "Authorization" = "Bearer $AccessToken"
         "Content-type"  = "application/json"
     }
-    # Standart properties always present
-    $Uri = $GDriveUri + $ID + "?supportsTeamDrives=true"
+    $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
+    $Uri = '{0}{1}{2}?{3}' -f $GDriveUri, $ID, $Revision, "?supportsTeamDrives=true"
     Write-Verbose "URI: $Uri"
 
     if ($PSCmdlet.ShouldProcess("Set property for item $ID")) {

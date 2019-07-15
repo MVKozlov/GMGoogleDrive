@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Get GoogleDrive Item content
 .DESCRIPTION
@@ -8,6 +8,8 @@
     File ID to return content from
 .PARAMETER OutFile
     Save content into file path
+.PARAMETER RevisionID
+    File Revision ID to return content from (Version history)
 .PARAMETER Raw
     Return content as raw byte[] array
 .PARAMETER Offset
@@ -31,10 +33,18 @@
 .EXAMPLE
     # save fine content to file
     Get-GDriveItemContent -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -OutFile D:\test.txt
+.EXAMPLE
+    # return string with previous file revision
+    $revisionId = Get-GDriveItemRevisionList -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -AllResults | `
+        Select-Object -ExpandProperty revisions | `
+        Select-Object -Skip 1 -Last 1
+    # Alternative:
+    # $revisionId = (Get-GDriveItemRevisionList -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -AllResults).revisions[-2]
+    Get-GDriveItemContent -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -RevisionID $revisionId
 .OUTPUTS
     string
     byte[]
-    file    
+    file
 .NOTES
     Author: Max Kozlov
 .LINK
@@ -51,6 +61,8 @@ param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
 
+    [string]$RevisionID,
+
     [Parameter(ParameterSetName='File')]
     [string]$OutFile,
 
@@ -59,7 +71,6 @@ param(
 
     [int64]$Offset,
     [int64]$Length,
-    [string]$RevisionID,
 
     [Parameter(ParameterSetName='String')]
     [System.Text.Encoding]$Encoding,
