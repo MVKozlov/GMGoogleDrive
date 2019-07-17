@@ -25,28 +25,36 @@ Describe "GMGoogleDrive" {
     Context "misc" {
         It 'should load all functions' {
             $Commands = Get-Command -CommandType Function -Module GMGoogleDrive | Select-Object -ExpandProperty Name
-            $Commands.Count | Should be 21
-            $Commands -contains "Get-GDriveSummary"                 | Should be $True
-            $Commands -contains "Add-GDriveItem"                    | Should be $True
-            $Commands -contains "Copy-GDriveItem"                   | Should be $True
-            $Commands -contains "Find-GDriveItem"                   | Should be $True
-            $Commands -contains "Get-GDriveChildItem"               | Should be $True
-            $Commands -contains "Get-GDriveItemContent"             | Should be $True
-            $Commands -contains "Get-GDriveItemProperty"            | Should be $True
-            $Commands -contains "Get-GDriveProxySetting"            | Should be $True
-            $Commands -contains "Move-GDriveItem"                   | Should be $True
-            $Commands -contains "New-GDriveFolder"                  | Should be $True
-            $Commands -contains "New-GDriveItem"                    | Should be $True
-            $Commands -contains "Remove-GDriveItem"                 | Should be $True
-            $Commands -contains "Rename-GDriveItem"                 | Should be $True
-            $Commands -contains "Get-GDriveAccessToken"             | Should be $True
-            $Commands -contains "Request-GDriveAuthorizationCode"   | Should be $True
-            $Commands -contains "Request-GDriveRefreshToken"        | Should be $True
-            $Commands -contains "Revoke-GDriveToken"                | Should be $True
-            $Commands -contains "Set-GDriveItemContent"             | Should be $True
-            $Commands -contains "Set-GDriveItemProperty"            | Should be $True
-            $Commands -contains "Set-GDriveProxySetting"            | Should be $True
-            $Commands -contains "Get-GDriveError"                   | Should be $True
+            $Commands.Count | Should be 24
+            $Commands -contains 'Request-GDriveAuthorizationCode' | Should be $True
+            $Commands -contains 'Request-GDriveRefreshToken'      | Should be $True
+            $Commands -contains 'Get-GDriveAccessToken'           | Should be $True
+            $Commands -contains 'Revoke-GDriveToken'              | Should be $True
+        
+            $Commands -contains 'Get-GDriveSummary'               | Should be $True
+            $Commands -contains 'Get-GDriveError'                 | Should be $True
+        
+            $Commands -contains 'Find-GDriveItem'                 | Should be $True
+            $Commands -contains 'Get-GDriveChildItem'             | Should be $True
+            $Commands -contains 'New-GDriveFolder'                | Should be $True
+            $Commands -contains 'New-GDriveItem'                  | Should be $True
+            $Commands -contains 'Add-GDriveItem'                  | Should be $True
+            $Commands -contains 'Add-GDriveFolder'                | Should be $True
+        
+            $Commands -contains 'Get-GDriveItemContent'           | Should be $True
+            $Commands -contains 'Get-GDriveItemProperty'          | Should be $True
+            $Commands -contains 'Get-GDriveItemRevisionList'      | Should be $True
+            $Commands -contains 'Set-GDriveItemContent'           | Should be $True
+            $Commands -contains 'Set-GDriveItemProperty'          | Should be $True
+        
+            $Commands -contains 'Move-GDriveItem'                 | Should be $True
+            $Commands -contains 'Rename-GDriveItem'               | Should be $True
+            $Commands -contains 'Copy-GDriveItem'                 | Should be $True
+            $Commands -contains 'Remove-GDriveItem'               | Should be $True
+            $Commands -contains 'Clear-GDriveTrash'               | Should be $True
+        
+            $Commands -contains 'Get-GDriveProxySetting'          | Should be $True
+            $Commands -contains 'Set-GDriveProxySetting'          | Should be $True
         }
     }
 }
@@ -273,6 +281,38 @@ Describe "Remove-GDriveItem" {
             $query = Find-GDriveItem -AccessToken $access.access_token -Query 'name="PesterTestFolder"'
             $query.files.Count | Should Be 0
         }
+    }
+}
+Describe 'Revisions support' {
+    # Add revisions to file
+    It "should create test file" {
+        { $script:revfile = Add-GDriveItem -AccessToken $access.access_token -Name 'PesterTestFileRev' -StringContent '0' } | Should Not Throw
+        $revfile | Should Not BeNullOrEmpty
+        $revfile.Item | Should Not BeNullOrEmpty
+        $revfile.Item.id | Should Not BeNullOrEmpty
+    }
+    It "should create 5 additional revisions" {
+        { 1..5 | %{ Set-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -StringContent $_ } } | Should Not Throw
+    }
+    Context "Get-GDriveItemRevisionList" {
+        It "should list 6 revisions" {
+            { $script:revlist = Get-GDriveItemRevisionList -AccessToken $access.access_token -ID $revfile.Item.id } | Should Not Throw
+            $revlist | Should Not BeNullOrEmpty
+            $revlist.revisions | Should Not BeNullOrEmpty
+            $revlist.revisions.Count | Should Be 6
+        }
+    }
+    Context "Get-GDriveItemContent" {
+        $e = [System.Text.Encoding]::Utf8
+        It "should get content for each revision" {
+            foreach ($i in (0..5)) {
+                $content = Get-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[$i].id -Encoding $e
+                $content | Should Be $i
+            }
+        }
+    }
+    It "should remove test file" {
+        { Remove-GDriveItem -AccessToken $access.access_token -Confirm:$false -ID $revfile.Item.id -Permanently } | Should Not Throw
     }
 }
 Describe "Revoke-GDriveToken - you lose your refresh token, so does NOT test it" {
