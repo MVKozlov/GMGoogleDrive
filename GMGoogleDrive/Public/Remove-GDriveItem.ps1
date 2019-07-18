@@ -45,7 +45,7 @@ param(
     [string]$AccessToken
 )
 
-    if ($Permanently) {
+    if ($Permanently -or $RevisionID) {
         $Headers = @{
             "Authorization" = "Bearer $AccessToken"
             "Content-type"  = "application/json"

@@ -292,7 +292,7 @@ Describe 'Revisions support' {
         $revfile.Item.id | Should Not BeNullOrEmpty
     }
     It "should create 5 additional revisions" {
-        { 1..5 | %{ Set-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -StringContent $_ } } | Should Not Throw
+        { 1..5 | ForEach-Object { Set-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -StringContent $_ } } | Should Not Throw
     }
     Context "Get-GDriveItemRevisionList" {
         It "should list 6 revisions" {
@@ -309,6 +309,42 @@ Describe 'Revisions support' {
                 $content = Get-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[$i].id -Encoding $e
                 $content | Should Be $i
             }
+        }
+    }
+    Context "Set-GDriveItemContent" {
+        $e = [System.Text.Encoding]::Utf8
+        It "should get content for each revision" {
+            foreach ($i in (0..5)) {
+                $content = Get-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[$i].id -Encoding $e
+                $content | Should Be $i
+            }
+        }
+    }
+    Context "Set-GDriveItemProperty" {
+        It "should set property for revision 0" {
+            { Set-GDriveItemProperty -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[0].id -JsonProperty (@{ keepForever='true' } | ConvertTo-Json) } | Should Not Throw
+        }
+    }
+    Context "Get-GDriveItemProperty" {
+        It "should get property for revision 0" {
+            { $script:content = Get-GDriveItemProperty -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[0].id -Property keepForever } | Should Not Throw
+            $content | Should Not BeNullOrEmpty
+            $content.keepForever | Should Not BeNullOrEmpty
+            $content.keepForever | Should Be $true
+        }
+    }
+    Context "Remove-GDriveItem" {
+        It "should remove revision 0" {
+            { Remove-GDriveItem -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[0].id -Confirm:$false } | Should Not Throw
+        }
+        It "should not get revision 0" {
+            { $script:content = Get-GDriveItemProperty -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[0].id -Property keepForever } | Should Throw
+        }
+        It "should get 5 revisios" {
+            { $script:revlist = Get-GDriveItemRevisionList -AccessToken $access.access_token -ID $revfile.Item.id } | Should Not Throw
+            $revlist | Should Not BeNullOrEmpty
+            $revlist.revisions | Should Not BeNullOrEmpty
+            $revlist.revisions.Count | Should Be 5
         }
     }
     It "should remove test file" {

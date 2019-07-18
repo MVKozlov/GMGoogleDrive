@@ -6,6 +6,8 @@
     Standart properties (kind,id,name,mimeType) always present
 .PARAMETER ID
     File ID to return metadata from
+.PARAMETER RevisionID
+    File Revision ID to return property from (Version history)
 .PARAMETER Property
     Properties to return
 .PARAMETER AccessToken
@@ -22,6 +24,7 @@
     Set-GDriveItemContent
     https://developers.google.com/drive/api/v3/reference/files/get
     https://developers.google.com/drive/api/v3/reference/files#resource
+    https://developers.google.com/drive/api/v3/reference/revisions/get
 #>
 function Get-GDriveItemProperty {
 [CmdletBinding()]
@@ -29,15 +32,19 @@ param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
 
+    [string]$RevisionID,
+
     [Parameter(Position=1)]
-    [ValidateSet('kind','id','name','mimeType',
+    [ValidateSet("*",'kind','id','name','mimeType',
     'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
     'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
     'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
     'viewersCanCopyContent','writersCanShare','permissions','folderColorRgb','originalFilename','fullFileExtension',
     'fileExtension','md5Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
     'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
-    'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',IgnoreCase = $false)]
+    'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
+    'keepForever', 'published', # revisions
+     IgnoreCase = $false)]
     [Alias('Metadata')]
     [string[]]$Property = @(),
 
@@ -48,9 +55,14 @@ param(
         "Authorization" = "Bearer $AccessToken"
         "Content-type"  = "application/json"
     }
-    # Standart properties always present
-    $Property = ('kind','id','name','mimeType' + $Property) | Sort-Object -Unique
-    $Uri = $GDriveUri + $ID + '?' + 'supportTeamDrives=true&' + 'fields=' + ($Property -join ',')
+    $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
+    if ($Property -contains "*") {
+         $Property = "*"
+    }
+    $Uri = '{0}{1}{2}?supportTeamDrives=true' -f $GDriveUri, $ID, $Revision
+    if ($Property) {
+        $Uri += '&fields={0}' -f ($Property -join ',')
+    }
     Write-Verbose "URI: $Uri"
 
     Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
