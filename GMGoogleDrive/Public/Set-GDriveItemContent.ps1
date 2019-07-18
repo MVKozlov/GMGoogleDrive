@@ -62,9 +62,9 @@
 .LINK
     Add-GDriveItem
     Set-GDriveItemProperty
-    https://developers.google.com/drive/v3/reference/files/create
-    https://developers.google.com/drive/v3/reference/files/update
-    https://developers.google.com/drive/v3/web/resumable-upload
+    https://developers.google.com/drive/api/v3/reference/files/create
+    https://developers.google.com/drive/api/v3/reference/files/update
+    https://developers.google.com/drive/api/v3/resumable-upload
 #>
 function Set-GDriveItemContent {
 [CmdletBinding(SupportsShouldProcess=$true)]
@@ -302,11 +302,14 @@ function Set-GDriveItemContent {
             catch {
                 $UploadResult.Error = $_.Exception
                 $UploadResult
-                   Write-Error $_.Exception
+                Write-Error $_.Exception
             }
         }
     }
     finally {
+        if ($ShowProgress) {
+            Write-Progress -Activity $uploadString -Completed
+        }
         $stream.Close()
         $stream.Dispose()
     }

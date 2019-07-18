@@ -18,7 +18,8 @@
 .LINK
     New-GDriveItem
     Set-GDriveItemProperty
-    https://developers.google.com/drive/v3/reference/files/create
+    https://developers.google.com/drive/api/v3/reference/files/create
+    https://developers.google.com/drive/api/v3/folder#inserting_a_file_in_a_folder
 #>
 function New-GDriveFolder {
 [CmdletBinding(SupportsShouldProcess=$true)]
@@ -32,7 +33,6 @@ param(
     [Parameter(Mandatory)]
     [string]$AccessToken
 )
-# https://developers.google.com/drive/v3/web/folder#inserting_a_file_in_a_folder
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
         "Content-type"  = "application/json"

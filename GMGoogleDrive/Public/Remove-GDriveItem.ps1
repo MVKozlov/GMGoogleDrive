@@ -7,6 +7,8 @@
     File ID to remove
 .PARAMETER Permanently
     Permanently remove item. If not set, item moved to trash
+.PARAMETER RevisionID
+    File Revision ID to remove (Version history)
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -24,26 +26,32 @@
     Rename-GDriveItem
     Move-GDriveItem
     Set-GDriveItemProperty
+    https://developers.google.com/drive/api/v3/reference/files/delete
+    https://developers.google.com/drive/api/v3/reference/revisions/delete
 #>
 function Remove-GDriveItem {
-[CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='High')]
+[CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='High', DefaultParameterSetName='Trash')]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
 
+    [Parameter(ParameterSetName='Permanent')]
     [switch]$Permanently,
+
+    [Parameter(ParameterSetName='Permanent')]
+    [string]$RevisionID,
 
     [Parameter(Mandatory)]
     [string]$AccessToken
 )
-#https://developers.google.com/drive/v3/reference/files/delete
 
-    if ($Permanently) {
+    if ($Permanently -or $RevisionID) {
         $Headers = @{
             "Authorization" = "Bearer $AccessToken"
             "Content-type"  = "application/json"
         }
-        $Uri = $GDriveUri + $ID + "?supportsTeamDrives=true"
+        $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
+        $Uri = '{0}{1}{2}?{3}' -f $GDriveUri, $ID, $Revision, "?supportsTeamDrives=true"
         Write-Verbose "URI: $Uri"
 
         if ($PSCmdlet.ShouldProcess("Remove Item $ID")) {

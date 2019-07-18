@@ -8,6 +8,8 @@
     File ID to return content from
 .PARAMETER OutFile
     Save content into file path
+.PARAMETER RevisionID
+    File Revision ID to return content from (Version history)
 .PARAMETER Raw
     Return content as raw byte[] array
 .PARAMETER Offset
@@ -31,23 +33,35 @@
 .EXAMPLE
     # save fine content to file
     Get-GDriveItemContent -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -OutFile D:\test.txt
+.EXAMPLE
+    # return string with previous file revision
+    $revisionId = Get-GDriveItemRevisionList -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -AllResults | `
+        Select-Object -ExpandProperty revisions | `
+        Select-Object -Skip 1 -Last 1
+    # Alternative:
+    # $revisionId = (Get-GDriveItemRevisionList -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -AllResults).revisions[-2]
+    Get-GDriveItemContent -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -RevisionID $revisionId
 .OUTPUTS
     string
     byte[]
-    file    
+    file
 .NOTES
     Author: Max Kozlov
 .LINK
     Get-GDriveItemProperty
     Set-GDriveItemContent
-    https://developers.google.com/drive/v3/reference/files/get
-    https://developers.google.com/drive/v3/web/manage-downloads
+    Get-GDriveItemRevisionList
+    https://developers.google.com/drive/api/v3/reference/files/get
+    https://developers.google.com/drive/api/v3/reference/revisions/get
+    https://developers.google.com/drive/api/v3/manage-downloads
 #>
 function Get-GDriveItemContent {
 [CmdletBinding(DefaultParameterSetName='String')]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
+
+    [string]$RevisionID,
 
     [Parameter(ParameterSetName='File')]
     [string]$OutFile,
@@ -64,8 +78,8 @@ param(
     [Parameter(Mandatory)]
     [string]$AccessToken
 )
-
-    $Uri = '{0}{1}?{2}' -f $GDriveUri, $ID, 'alt=media&mimeType=application/octet-stream&supportTeamDrives=true'
+    $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
+    $Uri = '{0}{1}{2}?{3}' -f $GDriveUri, $ID, $Revision, 'alt=media&mimeType=application/octet-stream'
     $wr = [System.Net.HttpWebRequest]::Create($Uri)
     if ($GDriveProxySettings.Proxy) {
         $proxy = New-Object System.Net.WebProxy $GDriveProxySettings.Proxy

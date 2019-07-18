@@ -7,14 +7,13 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    # rename file
     Get-GDriveSummary -AccessToken $access_token
 .OUTPUTS
     Json with summary metadata as PSObject
 .NOTES
     Author: Max Kozlov
 .LINK
-    https://developers.google.com/drive/v2/reference/about/get
+    https://developers.google.com/drive/api/v3/reference/about/get
 #>
 function Get-GDriveSummary {
 [CmdletBinding()]

@@ -25,8 +25,8 @@
     Author: Max Kozlov
 .LINK
     Get-GDriveChildItem
-    https://developers.google.com/drive/v3/web/search-parameters
-    https://developers.google.com/drive/v3/reference/files/list
+    https://developers.google.com/drive/api/v3/search-shareddrives
+    https://developers.google.com/drive/api/v3/reference/files/list
 #>
 function Find-GDriveItem {
 [CmdletBinding(DefaultParameterSetName='Next')]

@@ -20,6 +20,7 @@
     Request-GDriveRefreshToken
     Request-GDriveAuthorizationCode
     Revoke-GDriveToken
+    https://developers.google.com/drive/api/v3/about-auth
     https://developers.google.com/identity/protocols/OAuth2
     https://developers.google.com/identity/protocols/OAuth2InstalledApp
     https://developers.google.com/identity/protocols/OAuth2WebServer

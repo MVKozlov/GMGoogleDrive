@@ -33,6 +33,7 @@
     Get-GDriveAccessToken
     Request-GDriveRefreshToken
     Revoke-GDriveToken
+    https://developers.google.com/drive/api/v3/about-auth
     https://developers.google.com/identity/protocols/OAuth2
     https://developers.google.com/identity/protocols/OAuth2InstalledApp
     https://developers.google.com/identity/protocols/OAuth2WebServer
@@ -59,9 +60,9 @@ function Request-GDriveAuthorizationCode {
 	If ($PSBoundParameters['Debug']) { $DebugPreference = 'Continue' }
 
     $scope = [System.Uri]::EscapeDataString($GDriveAuthScope)
-    $Uri = '{0}?access_type={1}&response_type={2}&prompt={3}&client_id={4}&redirect_uri={5}&scope={6}' -f
+    $Uri = '{0}?access_type={1}&response_type={2}&prompt={3}&client_id={4}&redirect_uri={5}&scope={6}&include_granted_scopes={7}' -f
         $GDriveAccountsTokenUri, 'offline', 'code', 'consent',
-        $ClientID, [System.Uri]::EscapeDataString($RedirectUri), $scope
+        $ClientID, [System.Uri]::EscapeDataString($RedirectUri), $scope, 'true'
 
     Write-Verbose $Uri
     Write-Debug "ErrorActionPreference $ErrorActionPreference"
@@ -103,9 +104,33 @@ function Request-GDriveAuthorizationCode {
                 Start-Sleep -Milliseconds 500
             } while ($ie.Busy -eq $true)
             $forms = $ie.Document | Select-Object -ExpandProperty forms
+            $formparent = $forms | ForEach-Object { $_.parentNode.parentNode }
+            $formnext = $formparent.nextSibling
+            $child = $formnext.firstChild
+            while ($null -ne $child) {
+                $btnattr = $child.attributes | Where-Object { $_.nodeName -eq 'role' -and $_.nodeValue -eq 'button' }
+                if ($null -ne $btnattr) {
+                    if ($loginstate -eq 0) {
+                        $emailbutton = $child
+                    }
+                    elseif ($loginstate -eq 1) {
+                        $passwdbutton = $child
+                    }
+                    elseif ($loginstate -eq 2) {
+                        $accessbutton = $child
+                    }
+                    break;
+                }
+                $child = $child.firstChild
+            }
             $forms.Item(0) | Foreach-Object {
                 $object = $_
+                Write-Debug "Found $($object.id)"
                 switch ($_.id) {
+                    'identifierId' {
+                        Write-Debug 'identifierId field found'
+                        $email = $object
+                    }
                     'Email' {
                         Write-Debug 'Email field found'
                         $email = $object
@@ -115,7 +140,7 @@ function Request-GDriveAuthorizationCode {
                         $emailbutton = $object
                     }
                     'Passwd' {
-                        Write-Debug 'Password field found'
+                        Write-Debug 'Passwd field found'
                         $passwd = $object
                     }
                     'signIn' {
@@ -130,6 +155,12 @@ function Request-GDriveAuthorizationCode {
                         Write-Warning 'Captcha found !'
                         $ie.Visible = $true
                         $Automatic = $false
+                    }
+                    '' {
+                        if ($object.type -eq 'password') {
+                            Write-Debug 'Password field found'
+                            $passwd = $object
+                        }
                     }
                 }
             } # foreach
@@ -146,7 +177,7 @@ function Request-GDriveAuthorizationCode {
                     if ($Automatic) {
                         Write-Debug 'Next Click'
                         $email.Value = $UserName
-                        try { $emailbutton.Click() } catch { $null }
+                        try { $emailbutton.Click() } catch { Write-Debug "Email click Error $_" }
                     }
                 }
                 else {
@@ -163,7 +194,7 @@ function Request-GDriveAuthorizationCode {
                     if ($Automatic) {
                         Write-Debug 'Passwd Click'
                         $passwd.Value = $Password
-                        try { $passwdbutton.Click() } catch { $null }
+                        try { $passwdbutton.Click() } catch { Write-Debug "Password click Error $_" }
                     }
                 }
                 else {
@@ -177,7 +208,7 @@ function Request-GDriveAuthorizationCode {
                 $loginstate = 3
                 if ($Automatic) {
                     Write-Debug 'Approve Click'
-                    try { $accessbutton.Click() } catch { $null }
+                    try { $accessbutton.Click() } catch { Write-Debug "Approve click Error $_" }
                 }
             }
         }
