@@ -92,6 +92,12 @@ FunctionsToExport = @(
     'Set-GDriveItemContent',
     'Set-GDriveItemProperty',
 
+    'Get-GDriveItemPermissionList',
+    'Get-GDriveItemPermission',
+    'Add-GDriveItemPermission',
+    'Remove-GDriveItemPermission',
+    'Set-GDriveItemPermission',
+
     'Move-GDriveItem',
     'Rename-GDriveItem',
     'Copy-GDriveItem',
