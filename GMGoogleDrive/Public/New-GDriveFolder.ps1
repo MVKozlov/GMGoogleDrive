@@ -37,7 +37,7 @@ param(
         "Authorization" = "Bearer $AccessToken"
         "Content-type"  = "application/json"
     }
-    $Uri = $GDriveUri + '?supportsTeamDrives=true'
+    $Uri = $GDriveUri + '?supportsAllDrives=true'
     Write-Verbose "URI: $Uri"
     $RequestBody = '{{ "name": "{0}", "mimeType": "application/vnd.google-apps.folder", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
     Write-Verbose "RequestBody: $RequestBody"

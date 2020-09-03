@@ -59,7 +59,7 @@ param(
     if ($Property -contains "*") {
          $Property = "*"
     }
-    $Uri = '{0}{1}{2}?supportTeamDrives=true' -f $GDriveUri, $ID, $Revision
+    $Uri = '{0}{1}{2}?supportsAllDrives=true' -f $GDriveUri, $ID, $Revision
     if ($Property) {
         $Uri += '&fields={0}' -f ($Property -join ',')
     }

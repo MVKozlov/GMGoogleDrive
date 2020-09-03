@@ -50,6 +50,6 @@ param(
     if ($UseDomainAdminAccess) {
         [void]$Params.Add('useDomainAdminAccess=true')
     }
-    $Uri = '{0}{1}/permissions/{2}?supportTeamDrives=true&{3}' -f $GDriveUri, $ID, $PermissionID, ($Params -join '&')
+    $Uri = '{0}{1}/permissions/{2}?supportsAllDrives=true&{3}' -f $GDriveUri, $ID, $PermissionID, ($Params -join '&')
     Invoke-RestMethod -Uri $Uri -Method Delete -Headers $Headers @GDriveProxySettings
 }

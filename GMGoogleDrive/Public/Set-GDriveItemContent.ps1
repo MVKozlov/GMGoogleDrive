@@ -173,7 +173,7 @@ function Set-GDriveItemContent {
         else {
             Write-Verbose "Creating New file"
             $WebRequestParams.Method = 'Post'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsTeamDrives=true&uploadType=resumable&fields=kind,id,name,mimeType,parents"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsAllDrives=true&uploadType=resumable&fields=kind,id,name,mimeType,parents"
         }
         Write-Verbose ("URI: " + $WebRequestParams.Uri)
 

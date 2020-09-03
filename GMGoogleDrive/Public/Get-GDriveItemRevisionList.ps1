@@ -25,8 +25,6 @@ param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
 
-    [string[]]$Property = @(),
-
     [Parameter(ParameterSetName='Next')]
     [string]$NextPageToken,
 
@@ -69,7 +67,7 @@ param(
         if ($NextPageToken) {
             [void]$Params.Add('pageToken=' + $NextPageToken)
         }
-        $Uri = '{0}{1}/revisions/?supportTeamDrives=true&{2}' -f $GDriveUri, $ID,  ($Params -join '&')
+        $Uri = '{0}{1}/revisions/?supportsAllDrives=true&{2}' -f $GDriveUri, $ID,  ($Params -join '&')
         Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
     }
 }

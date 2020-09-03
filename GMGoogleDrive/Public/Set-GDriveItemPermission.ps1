@@ -74,7 +74,7 @@ param(
             [void]$Params.Add('{0}=true' -f $k)
         }
     }
-    $Uri = '{0}{1}/permissions/{2}?supportTeamDrives=true&{3}' -f $GDriveUri, $ID, $PermissionID, ($Params -join '&')
+    $Uri = '{0}{1}/permissions/{2}?supportsAllDrives=true&{3}' -f $GDriveUri, $ID, $PermissionID, ($Params -join '&')
     $Body = @{
         role = $Role
     }
