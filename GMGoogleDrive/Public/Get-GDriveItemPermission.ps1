@@ -25,6 +25,7 @@
     Remove-GDriveItemPermission
     Set-GDriveItemPermission
     https://developers.google.com/drive/api/v3/reference/permissions/get
+    https://developers.google.com/drive/api/v3/ref-roles
 #>
 function Get-GDriveItemPermission {
 [CmdletBinding(DefaultParameterSetName='Next')]

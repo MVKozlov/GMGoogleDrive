@@ -53,7 +53,8 @@
     Get-GDriveItemPermission
     Remove-GDriveItemPermission
     Set-GDriveItemPermission
-    https://developers.google.com/drive/api/v3/reference/permissions/get
+    https://developers.google.com/drive/api/v3/reference/permissions/create
+    https://developers.google.com/drive/api/v3/ref-roles
 #>
 function Add-GDriveItemPermission {
 [CmdletBinding()]

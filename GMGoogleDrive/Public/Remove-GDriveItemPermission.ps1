@@ -6,7 +6,7 @@
 .PARAMETER ID
     File ID to return permissions from
 .PARAMETER PermissionID
-    Permission ID to return
+    Permission ID to remove
 .PARAMETER UseDomainAdminAccess
     Issue the request as a domain administrator;
     The requester will be granted access if the file ID parameter refers to a shared drive and

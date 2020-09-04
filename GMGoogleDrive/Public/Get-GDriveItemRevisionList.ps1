@@ -5,6 +5,12 @@
     Get GoogleDrive Item revisions
 .PARAMETER ID
     File ID to return revisions from
+.PARAMETER AllResults
+    Collect all results in one output
+.PARAMETER NextPageToken
+    Supply NextPage Token from Previous paged search
+.PARAMETER PageSize
+    Set Page Size for paged search
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE

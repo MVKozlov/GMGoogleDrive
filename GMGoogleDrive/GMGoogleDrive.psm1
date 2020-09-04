@@ -8,6 +8,8 @@ $GDriveTrashUri = "https://www.googleapis.com/drive/v3/files/trash"
 
 $GDriveAuthScope = "https://www.googleapis.com/auth/drive"
 
+#TODO: https://developers.google.com/drive/api/v3/batch (may be?)
+
 $GDriveProxySettings = @{
 }
 

@@ -12,9 +12,9 @@
 .PARAMETER ExpirationTime
     The time at which this permission will expire (RFC 3339 date-time)
     Expiration times have the following restrictions:
-    They can only be set on user and group permissions
-    The time must be in the future
-    The time cannot be more than a year in the future
+     - They can only be set on user and group permissions
+     - The time must be in the future
+     - The time cannot be more than a year in the future
 .PARAMETER RemoveExpiration
     Whether to remove the expiration date
 .PARAMETER TransferOwnership
@@ -38,6 +38,7 @@
     Add-GDriveItemPermission
     Remove-GDriveItemPermission
     https://developers.google.com/drive/api/v3/reference/permissions/update
+    https://developers.google.com/drive/api/v3/ref-roles
 #>
 function Set-GDriveItemPermission {
 [CmdletBinding(DefaultParameterSetName='Add')]

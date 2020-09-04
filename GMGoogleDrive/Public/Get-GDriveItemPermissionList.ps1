@@ -5,6 +5,12 @@
     Get GoogleDrive Item permissions
 .PARAMETER ID
     File ID to return permissions from
+.PARAMETER AllResults
+    Collect all results in one output
+.PARAMETER NextPageToken
+    Supply NextPage Token from Previous paged search
+.PARAMETER PageSize
+    Set Page Size for paged search
 .PARAMETER UseDomainAdminAccess
     Issue the request as a domain administrator;
     The requester will be granted access if the file ID parameter refers to a shared drive and
@@ -23,6 +29,8 @@
     Remove-GDriveItemPermission
     Set-GDriveItemPermission
     https://developers.google.com/drive/api/v3/reference/permissions/list
+    https://developers.google.com/drive/api/v3/ref-roles
+    https://developers.google.com/drive/api/v3/manage-sharing
 #>
 function Get-GDriveItemPermissionList {
 [CmdletBinding(DefaultParameterSetName='Next')]
