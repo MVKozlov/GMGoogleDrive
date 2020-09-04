@@ -1,31 +1,38 @@
 ﻿<#
 .SYNOPSIS
-    Get GoogleDrive Item revisions
+    Get GoogleDrive Item permissions
 .DESCRIPTION
-    Get GoogleDrive Item revisions
+    Get GoogleDrive Item permissions
 .PARAMETER ID
-    File ID to return revisions from
+    File ID to return permissions from
 .PARAMETER AllResults
     Collect all results in one output
 .PARAMETER NextPageToken
     Supply NextPage Token from Previous paged search
 .PARAMETER PageSize
     Set Page Size for paged search
+.PARAMETER UseDomainAdminAccess
+    Issue the request as a domain administrator;
+    The requester will be granted access if the file ID parameter refers to a shared drive and
+    the requester is an administrator of the domain to which the shared drive belongs.
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Get-GDriveItemRevisionList -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0'
+    Get-GDriveItemPermissionList -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0'
 .OUTPUTS
-    Json with item revisions list as PSObject
+    Json with item permissions list as PSObject
 .NOTES
     Author: Max Kozlov
 .LINK
-    Get-GDriveItemContent
-    Set-GDriveItemProperty
-    Set-GDriveItemContent
-    https://developers.google.com/drive/api/v3/reference/revisions/list
+    Get-GDriveItemPermission
+    Add-GDriveItemPermission
+    Remove-GDriveItemPermission
+    Set-GDriveItemPermission
+    https://developers.google.com/drive/api/v3/reference/permissions/list
+    https://developers.google.com/drive/api/v3/ref-roles
+    https://developers.google.com/drive/api/v3/manage-sharing
 #>
-function Get-GDriveItemRevisionList {
+function Get-GDriveItemPermissionList {
 [CmdletBinding(DefaultParameterSetName='Next')]
 param(
     [Parameter(Mandatory, Position=0)]
@@ -37,9 +44,10 @@ param(
     [Parameter(ParameterSetName='All')]
     [switch]$AllResults,
 
-    # seems for now it keep only 101 revision in free version
-    [ValidateRange(1,1000)]
-    [int]$PageSize = 200,
+    [ValidateRange(1,100)]
+    [int]$PageSize = 100,
+
+    [switch]$UseDomainAdminAccess,
 
     [Parameter(Mandatory)]
     [string]$AccessToken
@@ -50,18 +58,18 @@ param(
     }
     if ($AllResults) {
         [void]$PSBoundParameters.Remove('AllResults')
-        $revisions = New-Object System.Collections.ArrayList
+        $permissions = New-Object System.Collections.ArrayList
         $baselist = $null
         do {
             $PSBoundParameters['NextPageToken'] = $NextPageToken
-            $list = Get-GDriveItemRevisionList @PSBoundParameters
+            $list = Get-GDriveItemPermissionList @PSBoundParameters
             if ($null -eq $list) { break }
             $baselist = $list
             $NextPageToken = $list.nextPageToken
-            $revisions.AddRange($list.revisions)
+            $permissions.AddRange($list.permissions)
         } while ($NextPageToken)
         if ($null -ne $baselist) {
-            $baselist.revisions = $revisions.ToArray()
+            $baselist.permissions = $permissions.ToArray()
             $baselist
         }
     }
@@ -70,10 +78,13 @@ param(
         [void]$Params.Add('pageSize=' + $PageSize)
         # Always return all properties.
         [void]$Params.Add('fields=*')
+        if ($UseDomainAdminAccess) {
+            [void]$Params.Add('useDomainAdminAccess=true')
+        }
         if ($NextPageToken) {
             [void]$Params.Add('pageToken=' + $NextPageToken)
         }
-        $Uri = '{0}{1}/revisions/?supportsAllDrives=true&{2}' -f $GDriveUri, $ID,  ($Params -join '&')
+        $Uri = '{0}{1}/permissions/?supportsAllDrives=true&{2}' -f $GDriveUri, $ID,  ($Params -join '&')
         Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
     }
 }

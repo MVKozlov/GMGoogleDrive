@@ -46,7 +46,7 @@ param(
         "Content-type"  = "application/json"
     }
     $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
-    $Uri = '{0}{1}{2}?{3}' -f $GDriveUri, $ID, $Revision, "?supportsTeamDrives=true"
+    $Uri = '{0}{1}{2}?{3}' -f $GDriveUri, $ID, $Revision, "?supportsAllDrives=true"
     Write-Verbose "URI: $Uri"
 
     if ($PSCmdlet.ShouldProcess("Set property for item $ID")) {

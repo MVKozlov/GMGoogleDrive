@@ -28,24 +28,27 @@
 function Get-GDriveAccessToken {
 [CmdletBinding()]
     param(
-        [Parameter(Mandatory, Position=0)]
+        [Parameter(Mandatory, Position=0, ValueFromPipelineByPropertyName)]
         [string]$ClientID,
 
-        [Parameter(Mandatory, Position=1)]
+        [Parameter(Mandatory, Position=1, ValueFromPipelineByPropertyName)]
         [string]$ClientSecret,
 
-        [Parameter(Mandatory, Position=2)]
+        [Parameter(Mandatory, Position=2, ValueFromPipelineByPropertyName)]
         [string]$RefreshToken
     )
-
-    $Uri = $GDriveOAuth2TokenUri
-    $Body = @{
-        grant_type = 'refresh_token'
-        client_id = $ClientID
-        client_secret = $ClientSecret
-        refresh_token = $RefreshToken
+    BEGIN {
+        $Uri = $GDriveOAuth2TokenUri
     }
-    Write-Debug (($Body | Out-String) -replace "`r`n")
-
-    Invoke-RestMethod -Method Post -Uri $Uri -Body $Body -ContentType "application/x-www-form-urlencoded" @GDriveProxySettings
+    PROCESS {
+        $Body = @{
+            grant_type = 'refresh_token'
+            client_id = $ClientID
+            client_secret = $ClientSecret
+            refresh_token = $RefreshToken
+        }
+        Write-Debug (($Body | Out-String) -replace "`r`n")
+    
+        Invoke-RestMethod -Method Post -Uri $Uri -Body $Body -ContentType "application/x-www-form-urlencoded" @GDriveProxySettings
+    }
 }
