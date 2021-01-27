@@ -3,7 +3,7 @@
     Get GoogleDrive Error responce
 .DESCRIPTION
     Get GoogleDrive Error responce
-.PARAMETER Error
+.PARAMETER ErrorRecord
     Error record to decode
 .PARAMETER Exception
     Exception object to decode
@@ -20,7 +20,7 @@ function Get-GDriveError {
 [CmdletBinding(DefaultParameterSetName='ex')]
 param(
     [Parameter(Mandatory, Position=0, ParameterSetName='er')]
-    [System.Management.Automation.ErrorRecord]$Error,
+    [System.Management.Automation.ErrorRecord]$ErrorRecord,
 
     [Parameter(Mandatory, Position=0, ParameterSetName='ex')]
     [Exception]$Exception
@@ -31,8 +31,8 @@ param(
         Message = ''
         Error = ''
     }
-    if ($Error) {
-        $Exception = $Error.Exception
+    if ($ErrorRecord) {
+        $Exception = $ErrorRecord.Exception
     }
     if ($Exception) {
         $result.Type = $Exception.GetType()

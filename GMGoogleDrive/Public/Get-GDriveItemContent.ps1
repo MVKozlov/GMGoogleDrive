@@ -93,7 +93,7 @@ param(
     }
 
     $wr.Method = 'Get'
-    $wr.ContentType = "application/json"
+    $wr.ContentType = "application/json; charset=utf-8"
     $wr.Headers.Add("Authorization", "Bearer $($AccessToken)")
     Write-Verbose "ParameterSetName: $($PSCmdlet.ParameterSetName)"
     Write-Verbose "Content Url: $Uri"

@@ -43,7 +43,6 @@ param(
 )
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
     $Params = New-Object System.Collections.ArrayList
     # Always return all properties.
@@ -52,5 +51,11 @@ param(
         [void]$Params.Add('useDomainAdminAccess=true')
     }
     $Uri = '{0}{1}/permissions/{2}?supportsAllDrives=true&{3}' -f $GDriveUri, $ID, $PermissionID, ($Params -join '&')
-    Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
+    Write-Verbose "URI: $Uri"
+    $requestParams = @{
+        Uri = $Uri
+        Headers = $Headers
+        ContentType = "application/json; charset=utf-8"
+    }
+    Invoke-RestMethod @requestParams -Method Get @GDriveProxySettings
 }

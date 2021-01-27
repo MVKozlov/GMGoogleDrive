@@ -53,7 +53,6 @@ param(
 )
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
 
     # Full property set will be supported after the rain on Thursday ;-)
@@ -70,6 +69,11 @@ param(
     Write-Verbose "Copy URI: $Uri"
     Write-Verbose "Copy Metadata: $JsonProperty"
     if ($PSCmdlet.ShouldProcess("Copy item $ID")) {
-        Invoke-RestMethod -Uri $Uri -Method Post -Headers $Headers -Body $JsonProperty @GDriveProxySettings
+        $requestParams = @{
+            Uri = $Uri
+            Headers = $Headers
+            ContentType = "application/json; charset=utf-8"
+        }
+        Invoke-RestMethod @requestParams -Method Post -Body $JsonProperty @GDriveProxySettings
     }
 }

@@ -43,13 +43,17 @@ param(
 )
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
     $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
     $Uri = '{0}{1}{2}?{3}' -f $GDriveUri, $ID, $Revision, "?supportsAllDrives=true"
     Write-Verbose "URI: $Uri"
 
     if ($PSCmdlet.ShouldProcess("Set property for item $ID")) {
-        Invoke-RestMethod -Uri $Uri -Method Patch -Headers $Headers -Body $JsonProperty @GDriveProxySettings
+        $requestParams = @{
+            Uri = $Uri
+            Headers = $Headers
+            ContentType = "application/json; charset=utf-8"
+        }
+        Invoke-RestMethod @requestParams -Method Patch -Body $JsonProperty @GDriveProxySettings
     }
 }

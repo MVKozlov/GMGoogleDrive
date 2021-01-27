@@ -152,13 +152,13 @@ function Set-GDriveItemContent {
     try {
         $Headers = @{
             "Authorization"           = "Bearer $AccessToken"
-            "Content-type"            = "application/json"
             "X-Upload-Content-Type"   = $ContentType
             "X-Upload-Content-Length" = $stream.Length
         }
 
         $WebRequestParams = @{
             Headers = $Headers
+            ContentType = "application/json; charset=utf-8"
             MaximumRedirection  = 0
             UseBasicParsing = $true
             Body = $JsonProperty

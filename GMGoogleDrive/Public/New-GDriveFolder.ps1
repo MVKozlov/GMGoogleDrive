@@ -35,13 +35,17 @@ param(
 )
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
     $Uri = $GDriveUri + '?supportsAllDrives=true'
     Write-Verbose "URI: $Uri"
     $RequestBody = '{{ "name": "{0}", "mimeType": "application/vnd.google-apps.folder", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
     Write-Verbose "RequestBody: $RequestBody"
     if ($PSCmdlet.ShouldProcess("Create new folder $Name")) {
-        Invoke-RestMethod -Uri $Uri -Method Post -Headers $Headers -Body $RequestBody @GDriveProxySettings
+        $requestParams = @{
+            Uri = $Uri
+            Headers = $Headers
+            ContentType = "application/json; charset=utf-8"
+        }
+        Invoke-RestMethod @requestParams -Method Post -Body $RequestBody @GDriveProxySettings
     }
 }

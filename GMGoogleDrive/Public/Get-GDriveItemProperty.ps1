@@ -53,7 +53,6 @@ param(
 )
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
     $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
     if ($Property -contains "*") {
@@ -64,6 +63,10 @@ param(
         $Uri += '&fields={0}' -f ($Property -join ',')
     }
     Write-Verbose "URI: $Uri"
-
-    Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
+    $requestParams = @{
+        Uri = $Uri
+        Headers = $Headers
+        ContentType = "application/json; charset=utf-8"
+    }
+    Invoke-RestMethod @requestParams -Method Get @GDriveProxySettings
 }

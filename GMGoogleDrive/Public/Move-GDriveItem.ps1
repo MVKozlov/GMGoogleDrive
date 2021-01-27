@@ -57,9 +57,13 @@ param(
 
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
     if ($PSCmdlet.ShouldProcess("Move item $ID to $($NewParentID -join ',')")) {
-        Invoke-RestMethod -Uri $Uri -Method Patch -Headers $Headers @GDriveProxySettings
+        $requestParams = @{
+            Uri = $Uri
+            Headers = $Headers
+            ContentType = "application/json; charset=utf-8"
+        }
+        Invoke-RestMethod @requestParams -Method Patch @GDriveProxySettings
     }
 }

@@ -65,7 +65,6 @@ param(
 )
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
     $Params = New-Object System.Collections.ArrayList
     # Always return all properties.
@@ -76,6 +75,7 @@ param(
         }
     }
     $Uri = '{0}{1}/permissions/{2}?supportsAllDrives=true&{3}' -f $GDriveUri, $ID, $PermissionID, ($Params -join '&')
+    Write-Verbose "URI: $Uri"
     $Body = @{
         role = $Role
     }
@@ -84,5 +84,10 @@ param(
     }
     $JsonProperty = ConvertTo-Json $Body
     Write-Verbose "RequestBody: $JsonProperty"
-    Invoke-RestMethod -Uri $Uri -Method Patch -Headers $Headers @GDriveProxySettings -Body $JsonProperty
+    $requestParams = @{
+        Uri = $Uri
+        Headers = $Headers
+        ContentType = "application/json; charset=utf-8"
+    }
+    Invoke-RestMethod @requestParams -Method Patch -Body $JsonProperty @GDriveProxySettings
 }

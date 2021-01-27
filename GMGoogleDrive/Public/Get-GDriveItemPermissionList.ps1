@@ -54,7 +54,6 @@ param(
 )
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
     if ($AllResults) {
         [void]$PSBoundParameters.Remove('AllResults')
@@ -85,6 +84,12 @@ param(
             [void]$Params.Add('pageToken=' + $NextPageToken)
         }
         $Uri = '{0}{1}/permissions/?supportsAllDrives=true&{2}' -f $GDriveUri, $ID,  ($Params -join '&')
-        Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
+        Write-Verbose "URI: $Uri"
+        $requestParams = @{
+            Uri = $Uri
+            Headers = $Headers
+            ContentType = "application/json; charset=utf-8"
+        }
+        Invoke-RestMethod @requestParams -Method Get @GDriveProxySettings
     }
 }

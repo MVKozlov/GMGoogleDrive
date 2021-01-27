@@ -58,7 +58,6 @@ param(
 
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
     Write-Verbose "URI: $GDriveUri"
     $Params = New-Object System.Collections.ArrayList
@@ -91,6 +90,12 @@ param(
     }
     else {
         $Uri = '{0}?supportsAllDrives=true&{1}' -f $GDriveUri, ($Params -join '&')
-        Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
+        Write-Verbose "URI: $Uri"
+        $requestParams = @{
+            Uri = $Uri
+            Headers = $Headers
+            ContentType = "application/json; charset=utf-8"
+        }
+        Invoke-RestMethod @requestParams -Method Get @GDriveProxySettings
     }
 }

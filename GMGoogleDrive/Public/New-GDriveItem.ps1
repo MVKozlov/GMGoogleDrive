@@ -52,7 +52,6 @@ function New-GDriveItem {
 
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
     # Full property set will be supported after the rain on Thursday ;-)
     $Property = 'kind','id','name','mimeType','parents'
@@ -60,6 +59,11 @@ function New-GDriveItem {
     Write-Verbose "URI: $Uri"
     Write-Verbose "RequestBody: $JsonProperty"
     if ($PSCmdlet.ShouldProcess("Create new item $Name")) {
-        Invoke-RestMethod -Uri $Uri -Method Post -Headers $Headers -Body $JsonProperty @GDriveProxySettings
+        $requestParams = @{
+            Uri = $Uri
+            Headers = $Headers
+            ContentType = "application/json; charset=utf-8"
+        }
+        Invoke-RestMethod @requestParams -Method Post -Body $JsonProperty @GDriveProxySettings
     }
 }

@@ -22,7 +22,11 @@ param(
 )
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
-        "Content-type"  = "application/json"
     }
-    Invoke-RestMethod -Uri $GDriveTrashUri -Method Delete -Headers $Headers @GDriveProxySettings
+    $requestParams = @{
+        Uri = $GDriveTrashUri
+        Headers = $Headers
+        ContentType = "application/json; charset=utf-8"
+    }
+    Invoke-RestMethod @requestParams -Method Delete @GDriveProxySettings
 }
