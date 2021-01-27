@@ -1,4 +1,4 @@
-Set-StrictMode -Version latest
+﻿Set-StrictMode -Version latest
 Import-Module $PSScriptRoot\..\GMGoogleDrive -Verbose -Force -ErrorAction Stop
 $ErrorActionPreference = 'Stop'
 
@@ -25,7 +25,7 @@ Describe "GMGoogleDrive" {
     Context "misc" {
         It 'should load all functions' {
             $Commands = Get-Command -CommandType Function -Module GMGoogleDrive | Select-Object -ExpandProperty Name
-            $Commands.Count | Should be 24
+            $Commands.Count | Should be 29
             $Commands -contains 'Request-GDriveAuthorizationCode' | Should be $True
             $Commands -contains 'Request-GDriveRefreshToken'      | Should be $True
             $Commands -contains 'Get-GDriveAccessToken'           | Should be $True
@@ -140,7 +140,7 @@ Describe "Set-GDriveItemContent" {
         ContentType = 'text/plain'
     }
     It "should set file1 content"  {
-        { $script:file1c = Set-GDriveItemContent @params -ID $file1.id -StringContent 'test file1' | Select -Expand Item } | Should Not Throw
+        { $script:file1c = Set-GDriveItemContent @params -ID $file1.id -StringContent 'test file1' | Select-Object -Expand Item } | Should Not Throw
         $file1c | Should Not BeNullOrEmpty
         $file1c.id | Should Be $file1.id
     }
@@ -154,7 +154,7 @@ Describe "Add-GDriveItem" {
     }
     Context "string" {
         It "should create file from string" {
-            { $script:file2 = Add-GDriveItem @params -Name "PesterTestFile2"  -StringContent 'test file2' | Select -Expand Item } | Should Not Throw
+            { $script:file2 = Add-GDriveItem @params -Name "PesterTestFile2"  -StringContent 'test file2' | Select-Object -Expand Item } | Should Not Throw
             $file2.id | Should Not BeNullOrEmpty
             $file2.name | Should Be "PesterTestFile2"
             $file2.mimeType | Should Be "text/plain"
@@ -162,7 +162,7 @@ Describe "Add-GDriveItem" {
     }
     Context "byte[]" {
         It "should create file from byte[]" {
-            { $script:file3 = Add-GDriveItem @params -Name "PesterTestFile3" -RawContent ([Text.Encoding]::Utf8.GetBytes('test file3')) | Select -Expand Item } | Should Not Throw
+            { $script:file3 = Add-GDriveItem @params -Name "PesterTestFile3" -RawContent ([Text.Encoding]::Utf8.GetBytes('test file3')) | Select-Object -Expand Item } | Should Not Throw
             $file3.id | Should Not BeNullOrEmpty
             $file3.name | Should Be "PesterTestFile3"
             $file3.mimeType | Should Be "text/plain"
@@ -171,24 +171,34 @@ Describe "Add-GDriveItem" {
     Context "file" {
         'test file4' | Set-Content -Path $tmpfile -Encoding ASCII
         It "should create file from file" {
-            { $script:file4 = Add-GDriveItem @params -Name "PesterTestFile4" -InFile $tmpfile | Select -Expand Item } | Should Not Throw
+            { $script:file4 = Add-GDriveItem @params -Name "PesterTestFile4" -InFile $tmpfile | Select-Object -Expand Item } | Should Not Throw
             $file4.id | Should Not BeNullOrEmpty
             $file4.name | Should Be "PesterTestFile4"
             $file4.mimeType | Should Be "text/plain"
         }
     }
+    Context "application/octet-stream" {
+        It "should create file from string" {
+            $params.ContentType = 'application/octet-stream'
+            { $script:file5 = Add-GDriveItem @params -Name "PesterTestFile2"  -StringContent 'test file2' | Select-Object -Expand Item } | Should Not Throw
+            $file5.id | Should Not BeNullOrEmpty
+            $file5.name | Should Be "PesterTestFile2"
+            $file5.mimeType | Should Be "application/octet-stream"
+        }
+    }
 }
 Describe "Set-GDriveItemProperty" {
         It "should set file1 description" {
-            { Set-GDriveItemProperty -AccessToken $access.access_token -ID $file1.id -JsonProperty '{ "description": "file1 description" }' } | Should Not Throw
+            { $script:file1ds = Set-GDriveItemProperty -AccessToken $access.access_token -ID $file1.id -JsonProperty '{ "description": "file1 description" }' } | Should Not Throw
+            $file1ds.id | Should Be $file1.id
         }
 }
 Describe "Get-GDriveItemProperty" {
         It "should get file1 description" {
-            { $script:file1d = Get-GDriveItemProperty -AccessToken $access.access_token -ID $file1.id -Property description } | Should Not Throw
-            $file1d | Should Not BeNullOrEmpty
-            $file1d.id | Should Be $file1.id
-            $file1d.description | Should Be 'file1 description'
+            { $script:file1dg = Get-GDriveItemProperty -AccessToken $access.access_token -ID $file1.id -Property id,description } | Should Not Throw
+            $file1dg | Should Not BeNullOrEmpty
+            $file1dg.id | Should Be $file1.id
+            $file1dg.description | Should Be 'file1 description'
         }
 }
 Describe "Copy-GDriveItem" {
@@ -215,7 +225,7 @@ Describe "Move-GDriveItem" {
 Describe "Find-GDriveItem" {
         It "should find 5 files" {
             { $script:files = Find-GDriveItem -AccessToken $access.access_token -Query 'name contains "PesterTestFile"' } | Should Not Throw
-            $files.files.Count | Should Be 5
+            $files.files.Count | Should Be 6
         }
 }
 Describe "Get-GDriveChildItem" {
@@ -223,13 +233,13 @@ Describe "Get-GDriveChildItem" {
         { $script:list = Get-GDriveChildItem -AccessToken $access.access_token -ParentID $folder.id  } | Should Not Throw
         $list | Should Not BeNullOrEmpty
         $list.files | Should Not BeNullOrEmpty
-        $list.files.Count | Should Be 4
+        $list.files.Count | Should Be 5
     }
     It "should return item list (all)" {
         { $script:list = Get-GDriveChildItem -AccessToken $access.access_token -ParentID $folder.id -AllResults -PageSize 2 } | Should Not Throw
         $list | Should Not BeNullOrEmpty
         $list.files | Should Not BeNullOrEmpty
-        $list.files.Count | Should Be 4
+        $list.files.Count | Should Be 5
     }
 }
 Describe "Get-GDriveItemContent" {
@@ -351,6 +361,58 @@ Describe 'Revisions support' {
         { Remove-GDriveItem -AccessToken $access.access_token -Confirm:$false -ID $revfile.Item.id -Permanently } | Should Not Throw
     }
 }
+Describe 'Charset support' {
+    Context "cyrillic" {
+        $testcontent = "съешь ещё этих мягких французских булок, да выпей чаю"
+        It "should create folder with cyrillic name" {
+            { $script:cfolder = New-GDriveFolder -AccessToken $access.access_token -Name $testcontent.Substring(1) } | Should Not Throw
+            $cfolder | Should Not BeNullOrEmpty
+            $cfolder.id | Should Not BeNullOrEmpty
+            $cfolder.name | Should Be $testcontent.Substring(1)
+        }
+        It "should create file item in folder with cyrillic name" {
+            { $script:cfile = New-GDriveItem -AccessToken $access.access_token -Name $testcontent -ParentID $cfolder.id } | Should Not Throw
+            $cfile | Should Not BeNullOrEmpty
+            $cfile.id | Should Not BeNullOrEmpty
+            $cfile.name | Should Be $testcontent
+        }
+        It "should set cyrillic file property" {
+            { Set-GDriveItemProperty -AccessToken $access.access_token -ID $cfile.id -JsonProperty ('{ "description": "' + $testcontent + '" }') } | Should Not Throw
+        }
+        It "should return file item" {
+            { $script:cfile1 = Find-GDriveItem -AccessToken $access.access_token -Query "name = '$testcontent'" | Select-Object -ExpandProperty files } | Should Not Throw
+            $cfile1 | Should Not BeNullOrEmpty
+            $cfile1.id | Should Not BeNullOrEmpty
+            $cfile1.id | Should Be $cfile.id
+            $cfile1.name | Should Be $testcontent
+        }
+        It "should return file item properties" {
+            { $script:cfilep = Get-GDriveItemProperty -AccessToken $access.access_token -Id $cfile.id -Property id, name, description } | Should Not Throw
+            $cfilep | Should Not BeNullOrEmpty
+            $cfilep.id | Should Not BeNullOrEmpty
+            $cfilep.name | Should Be $testcontent
+            $cfilep.description | Should Be $testcontent
+        }
+        It "should place cyrillic content into file" {
+            { $script:cfile2 = Set-GDriveItemContent -AccessToken $access.access_token -ID $cfile.id -ContentType 'text/plain' -StringContent $testcontent | Select-Object -Expand Item } | Should Not Throw
+            $cfile2 | Should Not BeNullOrEmpty
+            $cfile2.id | Should Not BeNullOrEmpty
+            $cfile2.id | Should Be $cfile.id
+            $cfile2.name | Should Be $testcontent
+        }
+        It "should return cyrillic content from file" {
+            { $script:content = Get-GDriveItemContent -AccessToken $access.access_token -ID $cfile.id -Raw } | Should Not Throw
+            [Text.Encoding]::UTF8.GetString($content) | Should Be $testcontent
+        }
+        It "should remove cyrillic file" {
+            { Remove-GDriveItem -AccessToken $access.access_token -Confirm:$false -ID $cfile.id -Permanently } | Should Not Throw
+        }
+        It "should remove cyrillic folder" {
+            { Remove-GDriveItem -AccessToken $access.access_token -Confirm:$false -ID $cfolder.id -Permanently } | Should Not Throw
+        }
+    }
+}
+
 Describe "Revoke-GDriveToken - you lose your refresh token, so does NOT test it" {
     It "should revoke access Token" -Skip {
         { Revoke-GDriveToken -Token $access.access_token -Confirm:$false } | Should Not Throw

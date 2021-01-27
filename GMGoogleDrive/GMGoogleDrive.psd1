@@ -13,7 +13,7 @@
 RootModule = 'GMGoogleDrive'
 
 # Version number of this module.
-ModuleVersion = '1.0.4.0'
+ModuleVersion = '1.0.4.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -28,7 +28,7 @@ Author = 'Max Kozlov'
 CompanyName = 'NA'
 
 # Copyright statement for this module
-Copyright = '(c) 2017 Max Kozlov. All rights reserved.'
+Copyright = '(c) 2017-2021 Max Kozlov. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Google Drive REST Api module'
