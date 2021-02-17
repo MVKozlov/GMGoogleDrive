@@ -7,6 +7,8 @@
     Search Query
 .PARAMETER AllResults
     Collect all results in one output
+.PARAMETER AllDriveItems
+    Get result from all drives (inluding shared drives)
 .PARAMETER OrderBy
     Set output order
 .PARAMETER NextPageToken
@@ -19,6 +21,8 @@
     Find-GDriveItem -AccessToken $access_token -Query 'name contains "test"'
 .EXAMPLE
     Find-GDriveItem -AccessToken $access_token -Query 'name contains "test"' -AllResults
+.EXAMPLE
+    Find-GDriveItem -AccessToken $access_token -Query 'name contains "shareddrivetest"' -AllResults -AllDriveItems
 .OUTPUTS
     Json search result with items metadata as PSObject
 .NOTES
@@ -53,7 +57,11 @@ param(
     [int]$PageSize = 100,
 
     [Parameter(Mandatory)]
-    [string]$AccessToken
+    [string]$AccessToken,
+
+    [parameter(Mandatory=$false)]
+    [switch]$AllDriveItems
+
 )
 
     $Headers = @{
@@ -62,6 +70,9 @@ param(
     Write-Verbose "URI: $GDriveUri"
     $Params = New-Object System.Collections.ArrayList
     [void]$Params.Add('pageSize=' + $PageSize)
+    if ($AllDriveItems) {
+        [void]$Params.Add('includeItemsFromAllDrives=true')
+    }
     if ($Query) {
         [void]$Params.Add('q=' + $Query)
     }
