@@ -5,6 +5,8 @@
     Search GoogleDriver for items with specified Query
 .PARAMETER Query
     Search Query
+.PARAMETER AllDriveItems
+    Get result from all drives (inluding shared drives)
 .PARAMETER AllResults
     Collect all results in one output
 .PARAMETER OrderBy
@@ -19,6 +21,8 @@
     Find-GDriveItem -AccessToken $access_token -Query 'name contains "test"'
 .EXAMPLE
     Find-GDriveItem -AccessToken $access_token -Query 'name contains "test"' -AllResults
+.EXAMPLE
+    Find-GDriveItem -AccessToken $access_token -Query 'name contains "shareddrivetest"' -AllResults -AllDriveItems
 .OUTPUTS
     Json search result with items metadata as PSObject
 .NOTES
@@ -33,6 +37,9 @@ function Find-GDriveItem {
 param(
     [Parameter(Position=0)]
     [string]$Query,
+
+    [parameter(Mandatory=$false)]
+    [switch]$AllDriveItems,
 
     [Parameter(ParameterSetName='All')]
     [switch]$AllResults,
@@ -54,6 +61,7 @@ param(
 
     [Parameter(Mandatory)]
     [string]$AccessToken
+
 )
 
     $Headers = @{
@@ -62,6 +70,9 @@ param(
     Write-Verbose "URI: $GDriveUri"
     $Params = New-Object System.Collections.ArrayList
     [void]$Params.Add('pageSize=' + $PageSize)
+    if ($AllDriveItems) {
+        [void]$Params.Add('includeItemsFromAllDrives=true')
+    }
     if ($Query) {
         [void]$Params.Add('q=' + $Query)
     }
