@@ -5,10 +5,10 @@
     Search GoogleDriver for items with specified Query
 .PARAMETER Query
     Search Query
-.PARAMETER AllResults
-    Collect all results in one output
 .PARAMETER AllDriveItems
     Get result from all drives (inluding shared drives)
+.PARAMETER AllResults
+    Collect all results in one output
 .PARAMETER OrderBy
     Set output order
 .PARAMETER NextPageToken
@@ -40,7 +40,7 @@ param(
 
     [parameter(Mandatory=$false)]
     [switch]$AllDriveItems,
-    
+
     [Parameter(ParameterSetName='All')]
     [switch]$AllResults,
 
