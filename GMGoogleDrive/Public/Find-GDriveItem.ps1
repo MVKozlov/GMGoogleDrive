@@ -38,6 +38,9 @@ param(
     [Parameter(Position=0)]
     [string]$Query,
 
+    [parameter(Mandatory=$false)]
+    [switch]$AllDriveItems,
+    
     [Parameter(ParameterSetName='All')]
     [switch]$AllResults,
 
@@ -57,10 +60,7 @@ param(
     [int]$PageSize = 100,
 
     [Parameter(Mandatory)]
-    [string]$AccessToken,
-
-    [parameter(Mandatory=$false)]
-    [switch]$AllDriveItems
+    [string]$AccessToken
 
 )
 
