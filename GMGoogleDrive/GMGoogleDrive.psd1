@@ -13,7 +13,7 @@
 RootModule = 'GMGoogleDrive'
 
 # Version number of this module.
-ModuleVersion = '1.0.4.2'
+ModuleVersion = '1.0.4.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -83,6 +83,7 @@ FunctionsToExport = @(
     'Get-GDriveChildItem',
     'New-GDriveFolder',
     'New-GDriveItem',
+    'New-GDriveShortcut',
     'Add-GDriveItem',
     'Add-GDriveFolder',
 
@@ -102,6 +103,7 @@ FunctionsToExport = @(
     'Rename-GDriveItem',
     'Copy-GDriveItem',
     'Remove-GDriveItem',
+    'Restore-GDriveItem',
     'Clear-GDriveTrash',
 
     'Get-GDriveProxySetting',
