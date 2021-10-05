@@ -119,7 +119,7 @@ param(
         if ($AllowFileDiscovery) {
             $Body.allowFileDiscovery = 'true'
         }
-        $JsonProperty = ConvertTo-Json $Body
+        $JsonProperty = ConvertTo-Json $Body -Compress
         Write-Verbose "RequestBody: $JsonProperty"
         $requestParams = @{
             Uri = $Uri

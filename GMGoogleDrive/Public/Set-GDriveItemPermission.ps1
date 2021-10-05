@@ -82,7 +82,7 @@ param(
     if ($ExpirationTime) {
         $Body.expirationTime = $ExpirationTime.ToUniversalTime().ToString('u').Replace(' ','T')
     }
-    $JsonProperty = ConvertTo-Json $Body
+    $JsonProperty = ConvertTo-Json $Body -Compress
     Write-Verbose "RequestBody: $JsonProperty"
     $requestParams = @{
         Uri = $Uri

@@ -47,7 +47,11 @@ function New-GDriveItem {
 
     if ($PSCmdlet.ParameterSetName -eq 'name') {
         $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
-        Write-Verbose "Constructed Metadata: $JsonProperty"
+        $Body = @{
+            name = $Name
+            parents = $ParentID
+        }
+        $JsonProperty = ConvertTo-Json $Body -Compress
     }
 
     $Headers = @{

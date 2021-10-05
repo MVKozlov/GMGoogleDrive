@@ -59,15 +59,16 @@ param(
     $Property = 'kind','id','name','mimeType','parents'
     $Uri = '{0}{1}/copy?supportsAllDrives=true&fields={2}' -f $GDriveUri, $ID, ($Property -join ',')
     if ($PSCmdlet.ParameterSetName -eq 'name') {
-        if ($ParentID) {
-            $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
+        $Body = @{
+            name = $Name
         }
-        else {
-            $JsonProperty = '{{ "name": "{0}" }}' -f $Name
+        if ($ParentID) {
+            $Body.parents = $ParentID
         }
     }
-    Write-Verbose "Copy URI: $Uri"
-    Write-Verbose "Copy Metadata: $JsonProperty"
+    $JsonProperty = ConvertTo-Json $Body -Compress
+    Write-Verbose "URI: $Uri"
+    Write-Verbose "RequestBody: $JsonProperty"
     if ($PSCmdlet.ShouldProcess("Copy item $ID")) {
         $requestParams = @{
             Uri = $Uri

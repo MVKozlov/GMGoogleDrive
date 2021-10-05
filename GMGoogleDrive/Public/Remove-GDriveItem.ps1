@@ -53,7 +53,7 @@ param(
         $Uri = '{0}{1}{2}?{3}' -f $GDriveUri, $ID, $Revision, "?supportsAllDrives=true"
         Write-Verbose "URI: $Uri"
 
-        if ($PSCmdlet.ShouldProcess("Remove Item $ID")) {
+        if ($PSCmdlet.ShouldProcess($ID, "Remove Item")) {
             $requestParams = @{
                 Uri = $Uri
                 Headers = $Headers
@@ -63,8 +63,8 @@ param(
         }
     }
     else {
-        if ($PSCmdlet.ShouldProcess("Move Item $ID to trash")) {
-            Set-GDriveItemProperty @PSBoundParameters -JsonProperty '{ "trashed":"true" }'
+        if ($PSCmdlet.ShouldProcess($ID, "Move Item to trash")) {
+            Set-GDriveItemProperty @PSBoundParameters -JsonProperty '{ "trashed": "true" }'
         }
     }
 }

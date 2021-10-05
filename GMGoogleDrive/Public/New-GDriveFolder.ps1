@@ -38,14 +38,20 @@ param(
     }
     $Uri = $GDriveUri + '?supportsAllDrives=true'
     Write-Verbose "URI: $Uri"
-    $RequestBody = '{{ "name": "{0}", "mimeType": "application/vnd.google-apps.folder", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
-    Write-Verbose "RequestBody: $RequestBody"
+    $Body = @{
+        name = $Name
+        mimeType = "application/vnd.google-apps.folder"
+        parents = $ParentID
+        shortcutDetails = @{ targetId = $TargetID }
+    }
+    $JsonProperty = ConvertTo-Json $Body -Compress
+    Write-Verbose "RequestBody: $JsonProperty"
     if ($PSCmdlet.ShouldProcess("Create new folder $Name")) {
         $requestParams = @{
             Uri = $Uri
             Headers = $Headers
             ContentType = "application/json; charset=utf-8"
         }
-        Invoke-RestMethod @requestParams -Method Post -Body $RequestBody @GDriveProxySettings
+        Invoke-RestMethod @requestParams -Method Post -Body $JsonProperty @GDriveProxySettings
     }
 }
