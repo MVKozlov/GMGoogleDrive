@@ -15,7 +15,7 @@
     https://developers.google.com/drive/api/v3/reference/files/emptyTrash
 #>
 function Clear-GDriveTrash {
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='High')]
 param(
     [Parameter(Mandatory)]
     [string]$AccessToken
@@ -28,5 +28,7 @@ param(
         Headers = $Headers
         ContentType = "application/json; charset=utf-8"
     }
-    Invoke-RestMethod @requestParams -Method Delete @GDriveProxySettings
+    if ($PSCmdlet.ShouldProcess("Trash", "Clear")) {
+       Invoke-RestMethod @requestParams -Method Delete @GDriveProxySettings
+    }
 }
