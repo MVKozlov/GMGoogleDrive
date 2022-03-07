@@ -52,7 +52,7 @@ param(
         }
     }
     $Property = 'kind','id','name','mimeType','parents'
-    $Uri = '{0}{1}?fields={2}&removeParents={3}&addParents={4}&supportTeamDrives=true' -f $GDriveUri, $ID, ($Property -join ','), ($ParentID -join ','), ($NewParentID -join ',')
+    $Uri = '{0}{1}?fields={2}&removeParents={3}&addParents={4}&supportAllDrives=true' -f $GDriveUri, $ID, ($Property -join ','), ($ParentID -join ','), ($NewParentID -join ',')
     Write-Verbose "Move URI: $Uri"
 
     $Headers = @{

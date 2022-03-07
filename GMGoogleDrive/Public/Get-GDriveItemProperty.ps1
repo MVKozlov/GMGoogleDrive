@@ -50,7 +50,7 @@ param(
     }
     # Standart properties always present
     $Property = ('kind','id','name','mimeType' + $Property) | Sort-Object -Unique
-    $Uri = $GDriveUri + $ID + '?' + 'supportTeamDrives=true&' + 'fields=' + ($Property -join ',')
+    $Uri = $GDriveUri + $ID + '?' + 'supportAllDrives=true&' + 'fields=' + ($Property -join ',')
     Write-Verbose "URI: $Uri"
 
     Invoke-RestMethod -Uri $Uri -Method Get -Headers $Headers @GDriveProxySettings
