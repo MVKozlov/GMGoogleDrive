@@ -5,12 +5,14 @@
     Search GoogleDriver for items with specified Query
 .PARAMETER Query
     Search Query
+.PARAMETER Property
+    Properties to return
+.PARAMETER OrderBy
+    Set output order
 .PARAMETER AllDriveItems
     Get result from all drives (inluding shared drives)
 .PARAMETER AllResults
     Collect all results in one output
-.PARAMETER OrderBy
-    Set output order
 .PARAMETER NextPageToken
     Supply NextPage Token from Previous paged search
 .PARAMETER PageSize
@@ -23,6 +25,8 @@
     Find-GDriveItem -AccessToken $access_token -Query 'name contains "test"' -AllResults
 .EXAMPLE
     Find-GDriveItem -AccessToken $access_token -Query 'name contains "shareddrivetest"' -AllResults -AllDriveItems
+.EXAMPLE
+    Find-GDriveItem -AccessToken $access_token -Query 'name contains "test"' -AllResults -Property 'id', 'parents'
 .OUTPUTS
     Json search result with items metadata as PSObject
 .NOTES
@@ -38,13 +42,19 @@ param(
     [Parameter(Position=0)]
     [string]$Query,
 
-    [parameter(Mandatory=$false)]
-    [switch]$AllDriveItems,
-
-    [Parameter(ParameterSetName='All')]
-    [switch]$AllResults,
-
-    #TODO: Properties
+    [Parameter(Position=1)]
+    [ValidateSet("*",'kind','id','name','mimeType',
+    'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
+    'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
+    'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
+    'viewersCanCopyContent','writersCanShare','permissions','folderColorRgb','originalFilename','fullFileExtension',
+    'fileExtension','md5Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+    'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
+    'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
+    'keepForever', 'published', # revisions
+     IgnoreCase = $false)]
+    [Alias('Metadata')]
+    [string[]]$Property = @(),
 
     [ValidateSet(    'createdTime', 'folder', 'modifiedByMeTime', 'modifiedTime', 'name', 'quotaBytesUsed', 'recency',
                     'sharedWithMeTime', 'starred', 'viewedByMeTime',
@@ -52,6 +62,12 @@ param(
                     'sharedWithMeTime desc', 'starred desc', 'viewedByMeTime desc'
     )]
     [string[]]$OrderBy,
+
+    [parameter(Mandatory=$false)]
+    [switch]$AllDriveItems,
+
+    [Parameter(ParameterSetName='All')]
+    [switch]$AllResults,
 
     [Parameter(ParameterSetName='Next')]
     [string]$NextPageToken,
@@ -82,6 +98,13 @@ param(
     if ($PSBoundParameters.ContainsKey('OrderBy')) {
         [void]$Params.Add('orderBy=' + ($OrderBy -replace ' ','+' -join ','))
     }
+    if ($Property) {
+        if ($Property -contains "*") {
+            $Property = "*"
+        }
+        [void]$Params.Add('fields=kind,nextPageToken,incompleteSearch,files({0})' -f ($Property -join ','))
+    }
+    # TODO: teams driveId	string	ID of the shared drive to search.
     if ($AllResults) {
         [void]$PSBoundParameters.Remove('AllResults')
         $files = New-Object System.Collections.ArrayList

@@ -5,10 +5,12 @@
     Search GoogleDriver for items in selected ParentID
 .PARAMETER ParentID
     Folder ID in which item will be searched
-.PARAMETER AllResults
-    Collect all results in one output
+.PARAMETER Property
+    Properties to return
 .PARAMETER OrderBy
     Set output order
+.PARAMETER AllResults
+    Collect all results in one output
 .PARAMETER NextPageToken
     Supply NextPage Token from Previous paged search
 .PARAMETER PageSize
@@ -17,6 +19,8 @@
     Access Token for request
 .EXAMPLE
     Get-GDriveItem -AccessToken $access_token -ParentID 'root'
+.EXAMPLE
+    Get-GDriveItem -AccessToken $access_token -ParentID 'root' -Property 'id', 'parents'
 .OUTPUTS
     Json search result with items metadata as PSObject
 .NOTES
@@ -30,8 +34,19 @@ param(
     [Parameter(Position=0)]
     [string]$ParentID,
 
-    [Parameter(ParameterSetName='All')]
-    [switch]$AllResults,
+    [Parameter(Position=1)]
+    [ValidateSet("*",'kind','id','name','mimeType',
+    'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
+    'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
+    'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
+    'viewersCanCopyContent','writersCanShare','permissions','folderColorRgb','originalFilename','fullFileExtension',
+    'fileExtension','md5Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+    'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
+    'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
+    'keepForever', 'published', # revisions
+     IgnoreCase = $false)]
+    [Alias('Metadata')]
+    [string[]]$Property = @(),
 
     [ValidateSet(    'createdTime', 'folder', 'modifiedByMeTime', 'modifiedTime', 'name', 'quotaBytesUsed', 'recency',
                     'sharedWithMeTime', 'starred', 'viewedByMeTime',
@@ -39,6 +54,9 @@ param(
                     'sharedWithMeTime desc', 'starred desc', 'viewedByMeTime desc'
     )]
     [string[]]$OrderBy,
+
+    [Parameter(ParameterSetName='All')]
+    [switch]$AllResults,
 
     [Parameter(ParameterSetName='Next')]
     [string]$NextPageToken,
