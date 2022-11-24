@@ -30,6 +30,8 @@ param(
         StatusCode = $null
         Message = ''
         Error = ''
+        Response = $null
+		Location = ''
     }
     if ($ErrorRecord) {
         $Exception = $ErrorRecord.Exception
@@ -39,6 +41,7 @@ param(
         $result.Message = $Exception.Message
         if ($Exception -is [System.Net.WebException]) {
             $response = $Exception.Response
+            $result.Response = $Exception.Response
             $result.StatusCode = $response.StatusCode
             $result.Message = $response.StatusDescription
             try {
@@ -55,12 +58,12 @@ param(
                 $stream = $response.GetResponseStream()
 
                 try {
-                    $s = $Encoding.GetString($stream.ToArray())
+                    $result.Error = $Encoding.GetString($stream.ToArray())
                     try {
-                        $result.Error = $s | ConvertFrom-Json | Select-Object -ExpandProperty error
+                        $result.Error = $result.Error | ConvertFrom-Json | Select-Object -ExpandProperty error
                     }
                     catch {
-                        Write-Warning "Can't decode error"
+                        Write-Warning "Can't decode error from json"
                     }
                 }
                 finally {
@@ -75,6 +78,22 @@ param(
         #        $response.Dispose()
             }
         }
+        elseif ('System.Net.Http.HttpRequestException' -in $Exception.psobject.TypeNames) {
+			$response = $Exception.Response
+            $result.Response = $Exception.Response
+            $result.StatusCode = [int]$response.StatusCode
+            $result.Message = $Exception.Message
+			$result.Location = if ($Exception.Response.Headers.Location) { $Exception.Response.Headers.Location.ToString() } else { '' }
+            if ($ErrorRecord -and $ErrorRecord.ErrorDetails) {
+                $result.Error = $ErrorRecord.ErrorDetails.Message
+                try {
+                    $result.Error = $result.Error | ConvertFrom-Json | Select-Object -ExpandProperty error
+                }
+                catch {
+                    Write-Warning "Can't decode error from json"
+                }
+            }
+		}
     }
     $result
 }

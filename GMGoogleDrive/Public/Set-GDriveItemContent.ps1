@@ -64,7 +64,7 @@
     Set-GDriveItemProperty
     https://developers.google.com/drive/api/v3/reference/files/create
     https://developers.google.com/drive/api/v3/reference/files/update
-    https://developers.google.com/drive/api/v3/resumable-upload
+    https://developers.google.com/drive/api/guides/manage-uploads#resumable
 #>
 function Set-GDriveItemContent {
 [CmdletBinding(SupportsShouldProcess=$true)]
@@ -208,43 +208,46 @@ function Set-GDriveItemContent {
             return
         }
 
+        if ($PSVersionTable.PSVersion.Major -ge 7) {
+            $WebRequestParams.SkipHttpErrorCheck = $true # allow to work with 308 "error" code in PSv7
+        }
+        $WebRequestParams.ContentType = $ContentType
         if ($wr.StatusCode -in 200,308) {
-            $UploadResult.ResumeID = $wr.Headers['X-GUploader-UploadID']
+            $UploadResult.ResumeID = $wr.Headers['X-GUploader-UploadID'] | Select-Object -First 1
             Write-Verbose "ResumeID: $($UploadResult.ResumeID)"
             try {
                 # Resume already have the right URI
                 if ($wr.Headers['Location']) {
-                    $WebRequestParams['Uri'] = $wr.Headers['Location']
+                    $WebRequestParams['Uri'] = $wr.Headers['Location'] | Select-Object -First 1
                 }
 
                 [long]$UploadedSize = 0
-                Write-Verbose "Received Range: $($wr.Headers['Range'])"
-                if ($wr.Headers['Range'] -match 'bytes=(\d+)-(\d+)')
+                $ReceivedRange = $wr.Headers['Range'] | Select-Object -First 1
+                Write-Verbose "Received Range: $ReceivedRange"
+                if ($ReceivedRange -match 'bytes=(\d+)-(\d+)')
                 {
                     $UploadedSize = ([long]$matches[2]) + 1
-                    Write-Verbose "Stream Position: $($stream.Position), UploadedSize:$($UploadedSize)"
+                    Write-Verbose "Stream Position: $($stream.Position), UploadedSize: $($UploadedSize)"
                     if ($stream.Position -ne $UploadedSize)
                     {
-                        Write-Verbose "Fast Forward to:$($UploadedSize)"
+                        Write-Verbose "Fast Forward to: $($UploadedSize)"
                         [void]$stream.Seek($UploadedSize, [System.IO.SeekOrigin]::Begin)
                     }
                 }
+
                 $WebRequestParams.Method = 'Put'
 
                 if ($PSCmdlet.ShouldProcess($ID, $uploadString)) {
-                    if ($UploadedSize -eq 0 -and
-                        $stream.Length -le $ChunkSize -and
-                        ($PSCmdlet.ParameterSetName -notin 'fileName','fileMeta'))
+                    if (($stream.Length -eq 0) -or # for null-sized files just 'close' upload
+                        ($UploadedSize -eq 0 -and
+                         $stream.Length -le $ChunkSize -and
+                         ($PSCmdlet.ParameterSetName -notin 'fileName','fileMeta')
+                        ))
                     {
                         Write-Verbose 'Single request upload'
-                        $WebRequestParams.Headers = @{
-                            "Authorization"  = "Bearer $AccessToken"
-                            "Content-Type"   = $ContentType
-                            "Content-Length" = $stream.Length
-                        }
                         $WebRequestParams.Body = $RawContent
 
-                        Write-Verbose ("Content-Length: {0}" -f $WebRequestParams.Headers['Content-Length'])
+                        Write-Verbose ("Content-Length: {0}" -f $stream.Length)
                         if ($ShowProgress) {
                             Write-Progress -Activity $uploadString -Status "Content upload [0-$($stream.Length)/$($stream.Length)]" -PercentComplete 99
                         }
@@ -257,12 +260,7 @@ function Set-GDriveItemContent {
                             [long]$nextSize = [Math]::Min($UploadedSize + $ChunkSize, $stream.Length)
                             $Range = "bytes $($UploadedSize)-$($nextSize-1)/$($stream.Length)"
                             $Length = [Math]::Min($stream.Length - $UploadedSize, $ChunkSize)
-                            $WebRequestParams.Headers = @{
-                                "Authorization"  = "Bearer $AccessToken"
-                                "Content-Type"   = $ContentType
-                                "Content-Range"  = $Range
-                                "Content-Length" = $Length
-                            }
+                            $WebRequestParams.Headers["Content-Range"] = $Range
                             # last buffer can be smaller
                             if ($Length -lt $ChunkSize) {
                                 [byte[]]$buffer = New-Object byte[] $Length
@@ -272,7 +270,7 @@ function Set-GDriveItemContent {
                                 throw "Stream read error: Readed $len bytes instead of $Length"
                             }
                             $WebRequestParams.Body = $buffer
-                            Write-Verbose ("Content-Length: {0}, Content-Range {1}, readed: {2}" -f $WebRequestParams.Headers["Content-Length"], $WebRequestParams.Headers['Content-Range'], $len)
+                            Write-Verbose ("Content-Length: {0}, Content-Range: {1}, readed: {2}" -f $Length, $Range, $len)
                             if ($ShowProgress) {
                                 Write-Progress -Activity $uploadString -Status "Content upload [$($Range -replace 'bytes ')]" -PercentComplete ($nextSize*100/$stream.Length)
                             }
@@ -280,27 +278,36 @@ function Set-GDriveItemContent {
                             switch ($wr.StatusCode) {
                                 308 {
                                         # bytes=0-262143
-                                        Write-Verbose "Received Range: $($wr.Headers['Range'])"
-                                        if ($wr.Headers['Range'] -match 'bytes=(\d+)-(\d+)')
+                                        $ReceivedRange = $wr.Headers['Range'] | Select-Object -First 1
+                                        Write-Verbose "Received Range: $ReceivedRange"
+                                        if ($ReceivedRange -match 'bytes=(\d+)-(\d+)')
                                         {
                                             $UploadedSize = ([long]$matches[2]) + 1
-                                            Write-Verbose "Stream Position: $($stream.Position), UploadedSize:$($UploadedSize)"
+                                            Write-Verbose "Stream Position: $($stream.Position), UploadedSize: $($UploadedSize)"
                                             if ($stream.Position -ne $UploadedSize)
                                             {
-                                                Write-Verbose "Fast Forward to:$($UploadedSize)"
+                                                Write-Verbose "Fast Forward to: $($UploadedSize)"
                                                 [void]$stream.Seek($UploadedSize, [System.IO.SeekOrigin]::Begin)
                                             }
                                         }
                                     }
+                                200 {}
+                                201 {}
+                                default { # Only for PSv7 because of SkipHttpErrorCheck
+                                    $ex = New-Object Microsoft.PowerShell.Commands.HttpResponseException (($wr.StatusDescription + " while upload chunk"), $wr.BaseResponse)
+                                    $er = New-Object System.Management.Automation.ErrorRecord ($ex, "WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeWebRequestCommand", 'InvalidOperation', $wr)
+                                    $er.ErrorDetails = New-Object System.Management.Automation.ErrorDetails $wr.Content
+                                    Write-Error -ErrorAction Stop -ErrorRecord $er
+                                }
                             }
-                        } until ($wr.StatusCode -eq 200)
+                        } until ($wr.StatusCode -in 200, 201)
                     }
                     $UploadResult.Item = ($wr.Content | ConvertFrom-Json)
                 }
                 $UploadResult
             }
             catch {
-                $UploadResult.Error = $_.Exception
+                $UploadResult.Error = $_
                 $UploadResult
                 Write-Error $_.Exception
             }
