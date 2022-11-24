@@ -16,7 +16,7 @@
 .EXAMPLE
     Remove-GDriveItemPermission -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -PermissionID 01234567890123456789
 .OUTPUTS
-    Json with item permission as PSObject
+    None
 .NOTES
     Author: Max Kozlov
 .LINK
@@ -27,7 +27,7 @@
     https://developers.google.com/drive/api/v3/reference/permissions/delete
 #>
 function Remove-GDriveItemPermission {
-[CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='High')]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
@@ -44,17 +44,17 @@ param(
         "Authorization" = "Bearer $AccessToken"
     }
     $Params = New-Object System.Collections.ArrayList
-    # Always return all properties.
-    [void]$Params.Add('fields=*')
     if ($UseDomainAdminAccess) {
         [void]$Params.Add('useDomainAdminAccess=true')
     }
     $Uri = '{0}{1}/permissions/{2}?supportsAllDrives=true&{3}' -f $GDriveUri, $ID, $PermissionID, ($Params -join '&')
     Write-Verbose "URI: $Uri"
-    $requestParams = @{
-        Uri = $Uri
-        Headers = $Headers
-        ContentType = "application/json; charset=utf-8"
+    if ($PSCmdlet.ShouldProcess($ID, "Remove Item Permission")) {
+        $requestParams = @{
+            Uri = $Uri
+            Headers = $Headers
+            ContentType = "application/json; charset=utf-8"
+        }
+        Invoke-RestMethod @requestParams -Method Delete @GDriveProxySettings
     }
-    Invoke-RestMethod @requestParams -Method Delete @GDriveProxySettings
 }

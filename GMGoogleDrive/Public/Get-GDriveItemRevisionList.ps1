@@ -31,11 +31,11 @@ param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
 
-    [Parameter(ParameterSetName='Next')]
-    [string]$NextPageToken,
-
     [Parameter(ParameterSetName='All')]
     [switch]$AllResults,
+
+    [Parameter(ParameterSetName='Next')]
+    [string]$NextPageToken,
 
     # seems for now it keep only 101 revision in free version
     [ValidateRange(1,1000)]

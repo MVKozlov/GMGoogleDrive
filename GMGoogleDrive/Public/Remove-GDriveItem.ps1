@@ -30,7 +30,7 @@
     https://developers.google.com/drive/api/v3/reference/revisions/delete
 #>
 function Remove-GDriveItem {
-[CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact='High', DefaultParameterSetName='Trash')]
+[CmdletBinding(SupportsShouldProcess=$true, ConfirmImpact='High', DefaultParameterSetName='Trash')]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,

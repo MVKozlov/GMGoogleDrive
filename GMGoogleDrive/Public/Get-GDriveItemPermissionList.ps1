@@ -5,16 +5,16 @@
     Get GoogleDrive Item permissions
 .PARAMETER ID
     File ID to return permissions from
+.PARAMETER UseDomainAdminAccess
+    Issue the request as a domain administrator;
+    The requester will be granted access if the file ID parameter refers to a shared drive and
+    the requester is an administrator of the domain to which the shared drive belongs.
 .PARAMETER AllResults
     Collect all results in one output
 .PARAMETER NextPageToken
     Supply NextPage Token from Previous paged search
 .PARAMETER PageSize
     Set Page Size for paged search
-.PARAMETER UseDomainAdminAccess
-    Issue the request as a domain administrator;
-    The requester will be granted access if the file ID parameter refers to a shared drive and
-    the requester is an administrator of the domain to which the shared drive belongs.
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -38,16 +38,16 @@ param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
 
-    [Parameter(ParameterSetName='Next')]
-    [string]$NextPageToken,
+    [switch]$UseDomainAdminAccess,
 
     [Parameter(ParameterSetName='All')]
     [switch]$AllResults,
 
+    [Parameter(ParameterSetName='Next')]
+    [string]$NextPageToken,
+
     [ValidateRange(1,100)]
     [int]$PageSize = 100,
-
-    [switch]$UseDomainAdminAccess,
 
     [Parameter(Mandatory)]
     [string]$AccessToken

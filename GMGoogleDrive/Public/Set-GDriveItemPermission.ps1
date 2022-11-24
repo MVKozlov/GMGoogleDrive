@@ -6,7 +6,7 @@
 .PARAMETER ID
     File ID to set permissions to
 .PARAMETER PermissionID
-    Permission ID to return
+    Permission ID to update
 .PARAMETER Role
     The role granted by this permission.
 .PARAMETER ExpirationTime
@@ -27,9 +27,9 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Set-GDriveItemPermission -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0'
+    Set-GDriveItemPermission -AccessToken $access_token -ID '0BAjkl4cBDNVpVbB5nGhKQ195aU0' -Role writer
 .OUTPUTS
-    Json with item permission as PSObject
+    Json with permission as PSObject
 .NOTES
     Author: Max Kozlov
 .LINK

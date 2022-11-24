@@ -10,13 +10,12 @@ $GDriveAuthScope = "https://www.googleapis.com/auth/drive"
 
 #TODO: https://developers.google.com/drive/api/v3/batch (may be?)
 
-$GDriveProxySettings = @{
-}
+$GDriveProxySettings = @{}
 
 #region Load Public Functions
 Try {
     Get-ChildItem "$PSScriptRoot\Public\*.ps1" -Exclude *.tests.ps1, *profile.ps1 | ForEach-Object {
-        $Function = $_.Name
+        #$Function = $_.Name
         . $_.FullName
     }
 } Catch {
