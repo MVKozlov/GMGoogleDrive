@@ -2,6 +2,7 @@
     Set-StrictMode -Version latest
     Import-Module $PSScriptRoot\..\GMGoogleDrive -Verbose -Force -ErrorAction Stop
     $ErrorActionPreference = 'Stop'
+    $global:tmpfile = [IO.Path]::GetTempFileName()
 }
 
 Describe "Prerequisites" {
@@ -16,10 +17,6 @@ Describe "Prerequisites" {
             $global:refresh    | Should -Not -BeNullOrEmpty
             $refresh.refresh_token  | Should -Not -BeNullOrEmpty
         }
-        It 'should create temp file' {
-            $script:tmpfile = [IO.Path]::GetTempFileName()
-            Test-Path $tmpfile | Should -Be $true
-        }
     }
 }
 
@@ -27,7 +24,7 @@ Describe "GMGoogleDrive" {
     Context "misc" {
         It 'should load all functions' {
             $Commands = Get-Command -CommandType Function -Module GMGoogleDrive | Select-Object -ExpandProperty Name
-            $Commands.Count | Should -Be 31
+            $Commands.Count | Should -Be 41
             $Commands -contains 'Request-GDriveAuthorizationCode' | Should -Be $True
             $Commands -contains 'Request-GDriveRefreshToken'      | Should -Be $True
             $Commands -contains 'Get-GDriveAccessToken'           | Should -Be $True
@@ -158,7 +155,13 @@ Describe "Set-GDriveItemContent" {
             ContentType = 'text/plain'
         }
     }
-    It "should set file1 content"  {
+    It "should set file1 content by multiple chunks" {
+        [byte[]]$buffer = 0..1124kb | ForEach-Object { [byte]($_ -band 0xff) }
+        { $script:file1d = Set-GDriveItemContent @params -ID $file1.id -RawContent $buffer -ChunkSize 256kb | Select-Object -Expand Item } | Should -Not -Throw
+        $file1d | Should -Not -BeNullOrEmpty
+        $file1d.id | Should -Be $file1.id
+    }
+    It "should set file1 content to test string" {
         { $script:file1c = Set-GDriveItemContent @params -ID $file1.id -StringContent 'test file1' | Select-Object -Expand Item } | Should -Not -Throw
         $file1c | Should -Not -BeNullOrEmpty
         $file1c.id | Should -Be $file1.id
@@ -191,10 +194,10 @@ Describe "Add-GDriveItem" {
     }
     Context "file" {
         BeforeAll {
-            'test file4' | Set-Content -Path $tmpfile -Encoding ASCII
+            'test file4' | Set-Content -Path $global:tmpfile -Encoding ASCII
         }
         It "should create file from file" {
-            { $script:file4 = Add-GDriveItem @params -Name "PesterTestFile4" -InFile $tmpfile | Select-Object -Expand Item } | Should -Not -Throw
+            { $script:file4 = Add-GDriveItem @params -Name "PesterTestFile4" -InFile $global:tmpfile | Select-Object -Expand Item } | Should -Not -Throw
             $file4.id | Should -Not -BeNullOrEmpty
             $file4.name | Should -Be "PesterTestFile4"
             $file4.mimeType | Should -Be "text/plain"
@@ -203,9 +206,9 @@ Describe "Add-GDriveItem" {
     Context "application/octet-stream" {
         It "should create file from string" {
             $params.ContentType = 'application/octet-stream'
-            { $script:file5 = Add-GDriveItem @params -Name "PesterTestFile2"  -StringContent 'test file2' | Select-Object -Expand Item } | Should -Not -Throw
+            { $script:file5 = Add-GDriveItem @params -Name "PesterTestFile5"  -StringContent 'test file5' | Select-Object -Expand Item } | Should -Not -Throw
             $file5.id | Should -Not -BeNullOrEmpty
-            $file5.name | Should -Be "PesterTestFile2"
+            $file5.name | Should -Be "PesterTestFile5"
             $file5.mimeType | Should -Be "application/octet-stream"
         }
     }
@@ -228,27 +231,27 @@ Describe "Get-GDriveItemProperty" {
 }
 Describe "Copy-GDriveItem" {
         It "should create file from existing item" {
-            { $script:file5 = Copy-GDriveItem -AccessToken $access.access_token -ID $file1.id -Name "PesterTestFile1a" } | Should -Not -Throw
-            $file5.id | Should -Not -BeNullOrEmpty
-            $file5.name | Should -Be "PesterTestFile1a"
+            { $script:file6 = Copy-GDriveItem -AccessToken $access.access_token -ID $file1.id -Name "PesterTestFile6" } | Should -Not -Throw
+            $file6.id | Should -Not -BeNullOrEmpty
+            $file6.name | Should -Be "PesterTestFile6"
         }
 }
 Describe "Rename-GDriveItem" {
         It "should rename file" {
-            { $script:file5 = Rename-GDriveItem -AccessToken $access.access_token -ID $file5.id -NewName "PesterTestFile5" } | Should -Not -Throw
+            { $script:file5 = Rename-GDriveItem -AccessToken $access.access_token -ID $file5.id -NewName "PesterTestFile5r" } | Should -Not -Throw
             $file5.id | Should -Not -BeNullOrEmpty
-            $file5.name | Should -Be "PesterTestFile5"
+            $file5.name | Should -Be "PesterTestFile5r"
         }
 }
 Describe "Move-GDriveItem" {
         It "should move file1 to root" {
-            { $script:file1a = Move-GDriveItem -AccessToken $access.access_token -ID $file1.id -NewParentID 'root' } | Should -Not -Throw
-            $file1a.parents.Count | Should -Be 1
-            $file1a.parents[0] | Should -Be $summary.rootFolderId
+            { $script:file1 = Move-GDriveItem -AccessToken $access.access_token -ID $file1.id -NewParentID 'root' } | Should -Not -Throw
+            $file1.parents.Count | Should -Be 1
+            $file1.parents[0] | Should -Be $summary.rootFolderId
         }
 }
 Describe "Find-GDriveItem" {
-        It "should find 5 files" {
+        It "should find 6 files" {
             { $script:files = Find-GDriveItem -AccessToken $access.access_token -Query 'name contains "PesterTestFile"' } | Should -Not -Throw
             $files.files.Count | Should -Be 6
         }
@@ -277,7 +280,7 @@ Describe "Get-GDriveItemContent" {
     Context "string" {
         It "should get file content as string" {
             { $script:content = Get-GDriveItemContent @params -ID $file5.id } | Should -Not -Throw
-            $content | Should -Be 'test file1'
+            $content | Should -Be 'test file5'
         }
         It "should get partial content as string" {
             { $script:content = Get-GDriveItemContent @params -ID $file5.id -Offset 3 -Length 5 } | Should -Not -Throw
@@ -291,10 +294,12 @@ Describe "Get-GDriveItemContent" {
         }
     }
     Context "file" {
-        'test file4' | Set-Content -Path $tmpfile
+        BeforeAll {
+            'test file4' | Set-Content -Path $global:tmpfile
+        }
         It "should get file content and save it to file" {
-            { Get-GDriveItemContent @params -ID $file3.id -OutFile $tmpfile } | Should -Not -Throw
-            $content = Get-Content -Path $tmpfile
+            { Get-GDriveItemContent @params -ID $file3.id -OutFile $global:tmpfile } | Should -Not -Throw
+            $content = Get-Content -Path $global:tmpfile
             $content | Should -Be 'test file3'
         }
     }
@@ -330,6 +335,14 @@ Describe "Remove-GDriveItem" {
             $query.files.Count | Should -Be 0
         }
     }
+    # Sometimes google drive does not delete files from deleted folders, but leaves them orphaned
+    # They can be found and retrieved, but their parents not found, although their id is in the properties
+    # This is probably a temporary bug, so I'll leave it commented out
+    # Context "Remove orphaned files" {
+    #     It "should remove orphaned files" {
+    #         { $list.files.id | ForEach-Object { Remove-GDriveItem -AccessToken $access.access_token -Confirm:$false -ID $_ -Permanently } } | Should -Not -Throw
+    #     }
+    # }
 }
 Describe 'Revisions support' {
     # Add revisions to file
@@ -392,7 +405,7 @@ Describe 'Revisions support' {
         It "should -Not get revision 0" {
             { $script:content = Get-GDriveItemProperty -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[0].id -Property keepForever } | Should -Throw
         }
-        It "should get 5 revisios" {
+        It "should get 5 revisions" {
             { $script:revlist = Get-GDriveItemRevisionList -AccessToken $access.access_token -ID $revfile.Item.id } | Should -Not -Throw
             $revlist | Should -Not -BeNullOrEmpty
             $revlist.revisions | Should -Not -BeNullOrEmpty
@@ -457,6 +470,127 @@ Describe 'Charset support' {
     }
 }
 
+Describe 'Comments and Replies'{
+    Context 'Workflow' {
+        It "should create text file" {
+            { $script:file_c = Add-GDriveItem -AccessToken $access.access_token -Name "PesterTestFileComment" -StringContent 'test' -ContentType 'text/plain' } | Should -Not -Throw
+            $file_c.Item.id | Should -Not -BeNullOrEmpty
+            $file_c.Item.name | Should -Be "PesterTestFileComment"
+            $file_c.Item.mimeType | Should -Be "text/plain"
+        }
+        It "should add comment 1" {
+            { $script:comment1 = Add-GDriveItemComment -AccessToken $access.access_token -ID $file_c.Item.id -Comment '1st comment' } | Should -Not -Throw
+            $comment1.id | Should -Not -BeNullOrEmpty
+            $comment1.content | Should -Be "1st comment"
+        }
+        It "should add comment 2" {
+            { $script:comment2 = Add-GDriveItemComment -AccessToken $access.access_token -ID $file_c.Item.id -Comment '2nd comment' -Ancor (@{r='head';a=@(@{line=@{n=2; l=1}})} | ConvertTo-Json -Compress -Depth 5) -QuotedContent 'es' } | Should -Not -Throw
+            $comment2.id | Should -Not -BeNullOrEmpty
+            $comment2.content | Should -Be "2nd comment"
+        }
+        It "should get comment" {
+            { $script:comment = Get-GDriveItemComment -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id } | Should -Not -Throw
+            $comment.id | Should -Not -BeNullOrEmpty
+            $comment.content | Should -Be "1st comment"
+        }
+        It "should get comment list" {
+            { $script:comments = Get-GDriveItemCommentList -AccessToken $access.access_token -ID $file_c.Item.id } | Should -Not -Throw
+            $comments.comments | Should -Not -BeNullOrEmpty
+            $comments.comments.Count | Should -Be 2
+        }
+        It "should get comment list (all)" {
+            { $script:comments = Get-GDriveItemCommentList -AccessToken $access.access_token -ID $file_c.Item.id -PageSize 1 -AllResults } | Should -Not -Throw
+            $comments.comments | Should -Not -BeNullOrEmpty
+            $comments.comments.Count | Should -Be 2
+        }
+        It "should set comment" {
+            { $script:comment = Set-GDriveItemComment -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -Comment "1st changed" } | Should -Not -Throw
+            $comment.id | Should -Not -BeNullOrEmpty
+            $comment.content | Should -Be "1st changed"
+        }
+        It "should add reply 1" {
+            { $script:reply1 = Add-GDriveItemReply -AccessToken $access.access_token -ID $file_c.Item.id -CommentID $comment1.id -Reply '1st reply' } | Should -Not -Throw
+            $reply1.id | Should -Not -BeNullOrEmpty
+            $reply1.content | Should -Be "1st reply"
+        }
+        It "should add reply 2 (reopen)" {
+            { $script:reply2 = Add-GDriveItemReply -AccessToken $access.access_token -ID $file_c.Item.id -CommentID $comment1.id -Reply '2nd reply' -Action reopen } | Should -Not -Throw
+            $reply2.id | Should -Not -BeNullOrEmpty
+            $reply2.content | Should -Be "2nd reply"
+            $reply2.action | Should -Be "reopen"
+        }
+        It "should get reply" {
+            { $script:reply = Get-GDriveItemReply -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -ReplyID $reply1.id } | Should -Not -Throw
+            $reply.id | Should -Not -BeNullOrEmpty
+            $reply.content | Should -Be "1st reply"
+        }
+        It "should get reply list" {
+            { $script:replies = Get-GDriveItemReplyList -AccessToken $access.access_token -ID $file_c.Item.id -CommentID $comment1.id } | Should -Not -Throw
+            $replies.replies | Should -Not -BeNullOrEmpty
+            $replies.replies.Count | Should -Be 2
+        }
+        It "should get reply list (all)" {
+            { $script:replies = Get-GDriveItemReplyList -AccessToken $access.access_token -ID $file_c.Item.id -CommentID $comment1.id -PageSize 1 -AllResults } | Should -Not -Throw
+            $replies.replies | Should -Not -BeNullOrEmpty
+            $replies.replies.Count | Should -Be 2
+        }
+        #without changing file, reply can't have action/be resolved
+        It "should update text file" {
+            { $script:file_c1 = Set-GDriveItemContent -AccessToken $access.access_token -ID $file_c.Item.id -StringContent 'changed test' -ContentType 'text/plain' } | Should -Not -Throw
+            $file_c1.Item.id | Should -Be $file_c.Item.id
+        }
+        It "should set reply 1" {
+            { $script:reply = Set-GDriveItemReply -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -ReplyID $reply1.id -Reply "1st changed" } | Should -Not -Throw
+            $reply.id | Should -Not -BeNullOrEmpty
+            $reply.content | Should -Be "1st changed"
+        }
+        It "should set reply 2" {
+            { $script:reply = Set-GDriveItemReply -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -ReplyID $reply2.id -Reply "2nd changed" } | Should -Not -Throw
+            $reply.id | Should -Not -BeNullOrEmpty
+            $reply.content | Should -Be "2nd changed"
+        }
+        #seems we cannot set reply as resolved, only add ?
+        It "should add reply 3 as resolved" {
+            { $script:reply3 = Add-GDriveItemReply -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -Action resolve } | Should -Not -Throw
+            $reply3.id | Should -Not -BeNullOrEmpty
+            $reply3.action | Should -Be "resolve"
+        }
+        It "should get comment as resolved" {
+            { $script:comment = Get-GDriveItemComment -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id } | Should -Not -Throw
+            $comment.id | Should -Not -BeNullOrEmpty
+            $comment.resolved | Should -BeTrue
+        }
+        It "should remove reply" {
+            { $script:reply = Remove-GDriveItemReply -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -ReplyID $reply2.id -Confirm:$false } | Should -Not -Throw
+            $reply | Should -BeNullOrEmpty
+        }
+        It "should not get removed reply" {
+            { $script:reply = Get-GDriveItemReply -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -ReplyID $reply2.id } | Should -Throw
+        }
+        It "should get removed reply" {
+            { $script:reply = Get-GDriveItemReply -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -ReplyID $reply2.id -IncludeDeleted } | Should -Not -Throw
+            $reply.id | Should -Not -BeNullOrEmpty
+            $reply.deleted | Should -Be $True
+        }
+        It "should remove comment" {
+            { $script:comment = Remove-GDriveItemComment -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -Confirm:$false } | Should -Not -Throw
+            $comment | Should -BeNullOrEmpty
+        }
+        It "should not get removed comment" {
+            { $script:comment = Get-GDriveItemComment -AccessToken $access.access_token -ID $file_c.Item.d -CommentId $comment1.id } | Should -Throw
+        }
+        It "should get removed comment" {
+            { $script:comment = Get-GDriveItemComment -AccessToken $access.access_token -ID $file_c.Item.id -CommentId $comment1.id -IncludeDeleted } | Should -Not -Throw
+            $comment.id | Should -Not -BeNullOrEmpty
+            $comment.deleted | Should -Be $True
+        }
+        It "should remove text file" {
+            { $script:file = Remove-GDriveItem -AccessToken $access.access_token -ID $file_c.Item.id -Permanently -Confirm:$false } | Should -Not -Throw
+            $file | Should -BeNullOrEmpty
+        }
+    }
+}
+
 Describe "Revoke-GDriveToken - you lose your refresh token, so does Not test it" {
     It "should revoke access Token" -Skip {
         { Revoke-GDriveToken -Token $access.access_token -Confirm:$false } | Should -Not -Throw
@@ -479,22 +613,20 @@ Describe "Get-GDriveError" {
         try { invoke-restmethod http://ya.ru/notexistenturl } catch { $err = $_ }
         { $script:rec = Get-GDriveError $err -WarningAction SilentlyContinue } | Should -Not -Throw
         $rec.Type | Should -Not -BeNullOrEmpty
-        $rec.Type.FullName | Should -Be 'System.Net.WebException'
+        $rec.Type.FullName | Should -BeIn 'System.Net.WebException', 'System.Net.Http.HttpRequestException', 'Microsoft.PowerShell.Commands.HttpResponseException'
         $rec.StatusCode | Should -Be 404
     }
     It "should return Fully decoded error object" {
         try { Get-GDriveItemProperty -AccessToken 'error token' -id 'error id' } catch { $err = $_ }
         { $script:rec = Get-GDriveError $err } | Should -Not -Throw
         $rec.Type | Should -Not -BeNullOrEmpty
-        $rec.Type.FullName | Should -Be 'System.Net.WebException'
+        $rec.Type.FullName | Should -BeIn 'System.Net.WebException', 'System.Net.Http.HttpRequestException', 'Microsoft.PowerShell.Commands.HttpResponseException'
         $rec.StatusCode | Should -Be 401
         $rec.error | Should -Not -BeNullOrEmpty
         $rec.error.code | Should -Be 401
     }
 }
-Describe "Remove temp file" {
-    It "should remove temp file" {
-        Remove-Item -Path $tmpfile
-        Test-Path $tmpfile | Should -Be $false
-    }
+
+AfterAll {
+    Remove-Item -Path $global:tmpfile
 }
