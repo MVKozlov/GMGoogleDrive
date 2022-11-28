@@ -102,13 +102,7 @@ param(
         Write-Verbose "Range: $($wr.Headers['Range'])"
     }
 
-    try {
-        $response = $wr.GetResponse()
-    }
-    catch {
-        Write-Error $_.Exception
-        return
-    }
+    $response = $wr.GetResponse() # no ErrorAction=Continue support, but can decode error
     try {
         Write-Verbose "StatusCode: $($response.StatusCode)"
         Write-Verbose "ContentLength: $($response.ContentLength)"
