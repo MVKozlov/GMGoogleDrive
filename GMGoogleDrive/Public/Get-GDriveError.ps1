@@ -15,6 +15,7 @@
 .NOTES
     Author: Max Kozlov
 .LINK
+    https://developers.google.com/drive/api/guides/handle-errors
 #>
 function Get-GDriveError {
 [CmdletBinding(DefaultParameterSetName='ex')]
@@ -31,14 +32,9 @@ param(
         Message = ''
         Error = ''
         Response = $null
-		Location = ''
+        Location = ''
     }
-    if ($ErrorRecord) {
-        $Exception = $ErrorRecord.Exception
-    }
-    if ($Exception) {
-        $result.Type = $Exception.GetType()
-        $result.Message = $Exception.Message
+    function decodeException($Exception) {
         if ($Exception -is [System.Net.WebException]) {
             $response = $Exception.Response
             $result.Response = $Exception.Response
@@ -56,9 +52,10 @@ param(
                 Write-Verbose "ContentType: $($response.ContentType)"
                 Write-Verbose "CharacterSet: $($response.CharacterSet)"
                 $stream = $response.GetResponseStream()
-
+                $ms = New-Object System.IO.MemoryStream # supports [System.Net.Http.HttpConnection+ChunkedEncodingReadStream]
                 try {
-                    $result.Error = $Encoding.GetString($stream.ToArray())
+                    $stream.CopyTo($ms)
+                    $result.Error = $Encoding.GetString($ms.ToArray())
                     try {
                         $result.Error = $result.Error | ConvertFrom-Json | Select-Object -ExpandProperty error
                     }
@@ -67,16 +64,16 @@ param(
                     }
                 }
                 finally {
-        # ?
-        #            $stream.Close()
-        #            $stream.Dispose()
+                    $ms.Dispose()
+                    #? $stream.Close()
+                    #? $stream.Dispose()
                 }
             }
             finally {
-        # ?
-        #        $response.Close()
-        #        $response.Dispose()
+                #? $response.Close()
+                #? $response.Dispose()
             }
+
         }
         elseif ('System.Net.Http.HttpRequestException' -in $Exception.psobject.TypeNames) {
 			$response = $Exception.Response
@@ -93,7 +90,16 @@ param(
                     Write-Warning "Can't decode error from json"
                 }
             }
-		}
+        }
+    }
+    if ($ErrorRecord) {
+        $Exception = $ErrorRecord.Exception
+    }
+    while ($Exception) {
+        $result.Type = $Exception.GetType()
+        $result.Message = $Exception.Message
+        decodeException $Exception
+        $Exception = $Exception.InnerException
     }
     $result
 }
