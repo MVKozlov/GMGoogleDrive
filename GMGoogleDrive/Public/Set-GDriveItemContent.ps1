@@ -87,6 +87,7 @@ function Set-GDriveItemContent {
 
         [Parameter(Mandatory, ParameterSetName='fileName')]
         [Parameter(Mandatory, ParameterSetName='fileMeta')]
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
         [string]$InFile,
 
         [Parameter(Mandatory, ParameterSetName='dataName')]
@@ -97,6 +98,7 @@ function Set-GDriveItemContent {
         [Parameter(ParameterSetName='dataName')]
         [Parameter(ParameterSetName='stringName')]
         [Parameter(ParameterSetName='fileName')]
+        [Parameter(ParameterSetName='fileAutomaticMeta')]
         [Alias('DestinationID')]
         [string[]]$ParentID = @('root'),
 
@@ -117,6 +119,9 @@ function Set-GDriveItemContent {
 
         [switch]$ShowProgress,
 
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
+        [switch]$UseMetadataFromFile,
+
         [Parameter(Mandatory)]
         [string]$AccessToken
     )
@@ -135,8 +140,17 @@ function Set-GDriveItemContent {
         $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
         Write-Verbose "Constructed Metadata: $JsonProperty"
     }
+    if ($UseMetadataFromFile) {
+        $FileMetadata = Get-Item $InFile
+        $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"], "modifiedTime": "{2}", "createdTime": "{3}" }}' -f 
+                                $FileMetadata.Name,
+                                ($ParentID -join '","'),
+                                (Get-Date $FileMetadata.LastWriteTime -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC),
+                                (Get-Date $FileMetadata.CreationTime  -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
+        Write-Verbose "Constructed Metadata: $JsonProperty"
+    }
     try {
-        if ($PSCmdlet.ParameterSetName -in 'fileName','fileMeta') {
+        if ($PSCmdlet.ParameterSetName -in 'fileName','fileMeta','fileAutomaticMeta') {
             $stream = New-Object System.IO.FileStream $InFile, 'Open'
         }
         else {

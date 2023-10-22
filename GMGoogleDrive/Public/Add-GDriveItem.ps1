@@ -23,6 +23,8 @@
     Upload request size
 .PARAMETER ShowProgress
     Show progress bar while uploading
+.PARAMETER UseMetadataFromFile
+    Uses the metadata of the file provided in InFile
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -63,6 +65,7 @@ function Add-GDriveItem {
 
         [Parameter(Mandatory, ParameterSetName='fileName')]
         [Parameter(Mandatory, ParameterSetName='fileMeta')]
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
         [string]$InFile,
 
         [Parameter(Mandatory, ParameterSetName='dataName')]
@@ -73,6 +76,7 @@ function Add-GDriveItem {
         [Parameter(ParameterSetName='dataName')]
         [Parameter(ParameterSetName='stringName')]
         [Parameter(ParameterSetName='fileName')]
+        [Parameter(ParameterSetName='fileAutomaticMeta')]
         [string[]]$ParentID = @('root'),
 
         [Parameter(ParameterSetName='dataMeta')]
@@ -89,6 +93,9 @@ function Add-GDriveItem {
         [int]$ChunkSize = 4Mb,
 
         [switch]$ShowProgress,
+
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
+        [switch]$UseMetadataFromFile,
 
         [Parameter(Mandatory)]
         [string]$AccessToken
