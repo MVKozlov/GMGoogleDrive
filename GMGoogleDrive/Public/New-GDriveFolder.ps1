@@ -30,6 +30,8 @@ param(
     [Parameter(Position=1)]
     [string[]]$ParentID = @('root'),
 
+    [DateTime]$CreationDate,
+
     [Parameter(Mandatory)]
     [string]$AccessToken
 )
@@ -44,6 +46,11 @@ param(
         parents = $ParentID
         shortcutDetails = @{ targetId = $TargetID }
     }
+    if($CreationDate) {
+        $Body["createdTime"] = (Get-Date $CreationDate  -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
+        $Body["modifiedTime"] = $Body["createdTime"]
+    }
+
     $JsonProperty = ConvertTo-Json $Body -Compress
     Write-Verbose "RequestBody: $JsonProperty"
     if ($PSCmdlet.ShouldProcess("Create new folder $Name")) {
