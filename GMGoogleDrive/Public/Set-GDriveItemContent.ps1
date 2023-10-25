@@ -108,6 +108,18 @@ function Set-GDriveItemContent {
         [Alias('Metadata')]
         [string]$JsonProperty = '',
 
+        [ValidateSet("*",'kind','id','name','mimeType',
+        'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
+        'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
+        'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
+        'viewersCanCopyContent','writersCanShare','permissions','originalFilename','fullFileExtension',
+        'fileExtension','md5Checksum','sha1Checksum','sha256Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+        'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
+        'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
+        'keepForever', 'published', # revisions
+        IgnoreCase = $false)]
+        [string[]]$ResultProperty = @('kind','id','name','mimeType','parents'),
+
         [string]$ResumeID,
 
         [string]$ContentType = 'application/octet-stream',
@@ -121,6 +133,8 @@ function Set-GDriveItemContent {
 
         [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
         [switch]$UseMetadataFromFile,
+
+        [switch]$KeepRevisionForever,
 
         [Parameter(Mandatory)]
         [string]$AccessToken
@@ -140,13 +154,19 @@ function Set-GDriveItemContent {
         $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
         Write-Verbose "Constructed Metadata: $JsonProperty"
     }
-    if ($UseMetadataFromFile) {
+    if ($UseMetadataFromFile -and -not $PSBoundParameters.ContainsKey('ID')) {
         $FileMetadata = Get-Item $InFile
         $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"], "modifiedTime": "{2}", "createdTime": "{3}" }}' -f 
                                 $FileMetadata.Name,
                                 ($ParentID -join '","'),
                                 (Get-Date $FileMetadata.LastWriteTime -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC),
                                 (Get-Date $FileMetadata.CreationTime  -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
+        Write-Verbose "Constructed Metadata: $JsonProperty"
+    }
+    if ($UseMetadataFromFile -and $PSBoundParameters.ContainsKey('ID')) {
+        $FileMetadata = Get-Item $InFile
+        $JsonProperty = '{{ "modifiedTime": "{2}" }}' -f 
+                                (Get-Date $FileMetadata.LastWriteTime -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
         Write-Verbose "Constructed Metadata: $JsonProperty"
     }
     try {
@@ -182,12 +202,15 @@ function Set-GDriveItemContent {
             Write-Verbose "Updating File $ID"
             # Patch instead of Put! docs are wrong? Put give 404
             $WebRequestParams.Method = 'Patch'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?supportsAllDrives=true&uploadType=resumable&fields=kind,id,name,mimeType,parents"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?supportsAllDrives=true&uploadType=resumable&fields=$($ResultProperty -join ',')"
         }
         else {
             Write-Verbose "Creating New file"
             $WebRequestParams.Method = 'Post'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsAllDrives=true&uploadType=resumable&fields=kind,id,name,mimeType,parents"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsAllDrives=true&uploadType=resumable&fields=$($ResultProperty -join ',')"
+        }
+        if($KeepRevisionForever) {
+            $WebRequestParams.Uri = $WebRequestParams.Uri + "&keepRevisionForever=true"
         }
         Write-Verbose ("URI: " + $WebRequestParams.Uri)
 

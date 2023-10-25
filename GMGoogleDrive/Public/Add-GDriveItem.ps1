@@ -85,6 +85,18 @@ function Add-GDriveItem {
         [Alias('Metadata')]
         [string]$JsonProperty = '',
 
+        [ValidateSet("*",'kind','id','name','mimeType',
+        'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
+        'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
+        'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
+        'viewersCanCopyContent','writersCanShare','permissions','originalFilename','fullFileExtension',
+        'fileExtension','md5Checksum','sha1Checksum','sha256Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+        'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
+        'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
+        'keepForever', 'published', # revisions
+        IgnoreCase = $false)]
+        [string[]]$ResultProperty = @('kind','id','name','mimeType','parents'),
+
         [string]$ContentType = 'application/octet-stream',
 
         [ValidateScript({
@@ -96,6 +108,8 @@ function Add-GDriveItem {
 
         [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
         [switch]$UseMetadataFromFile,
+
+        [switch]$KeepRevisionForever,
 
         [Parameter(Mandatory)]
         [string]$AccessToken
