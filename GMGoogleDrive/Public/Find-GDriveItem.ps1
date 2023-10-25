@@ -48,7 +48,7 @@ param(
     'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
     'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
     'viewersCanCopyContent','writersCanShare','permissions','folderColorRgb','originalFilename','fullFileExtension',
-    'fileExtension','md5Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+    'fileExtension','md5Checksum','sha256Checksum','sha1Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
     'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
     'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
     'keepForever', 'published', # revisions
@@ -90,7 +90,7 @@ param(
         [void]$Params.Add('includeItemsFromAllDrives=true')
     }
     if ($Query) {
-        [void]$Params.Add('q=' + $Query)
+        [void]$Params.Add('q=' + [URI]::EscapeDataString($Query) )
     }
     if ($NextPageToken) {
         [void]$Params.Add('pageToken=' + $NextPageToken)
