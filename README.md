@@ -1,5 +1,14 @@
 # GMGoogleDrive
 Google Drive REST Api module for Powershell
+
+## Table of Contents
+
+- [GoogleDrive Setup](#googledrive-setup)
+- [Usage](#usage)
+- [Error Handling](#error-handling)
+- [Automate things](#automate-things)
+
+
 ### GoogleDrive Setup
 Google Drive is a free service for file storage files. In order to use this storage you need a Google (or Google Apps) user which will own the files, and a Google API client.
 1. Go to the [Google Developers console](https://console.developers.google.com/project) and create a new project.
