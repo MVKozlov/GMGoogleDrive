@@ -282,7 +282,12 @@ function Set-GDriveItemContent {
                         ))
                     {
                         Write-Verbose 'Single request upload'
-                        $WebRequestParams.Body = $RawContent
+                        [byte[]]$buffer = New-Object byte[] $stream.Length
+                        $len = $stream.Read($buffer, 0, $stream.Length);
+                        if ($len -ne $stream.Length) {
+                            throw "Stream read error: Readed $len bytes instead of $($stream.Length)"
+                        }
+                        $WebRequestParams.Body = $buffer
 
                         Write-Verbose ("Content-Length: {0}" -f $stream.Length)
                         if ($ShowProgress) {
