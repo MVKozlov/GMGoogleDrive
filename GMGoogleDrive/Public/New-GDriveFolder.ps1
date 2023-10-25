@@ -7,6 +7,8 @@
     Name of an folder item to be created
 .PARAMETER ParentID
     Folder ID(s) in which new item will be placed
+.PARAMETER CreationDate
+    Set the creation date of the new folder in Google Drive
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE

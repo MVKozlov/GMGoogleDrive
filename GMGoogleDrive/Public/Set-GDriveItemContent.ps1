@@ -21,6 +21,8 @@
     Folder ID(s) in which new item will be placed
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
+.PARAMETER ResultProperty
+    List of properties that will be retured once upload is completed
 .PARAMETER ResumeID
     Upload ID to resume operations in case of uploading errors
 .PARAMETER ContentType
@@ -29,6 +31,10 @@
     Upload request size
 .PARAMETER ShowProgress
     Show progress bar while uploading
+.PARAMETER UseMetadataFromFile
+    Uses the metadata of the file provided in InFile
+.PARAMETER KeepRevisionForever
+    Set the flag that this revision of the file will be kept forever.
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
