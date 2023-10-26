@@ -76,6 +76,9 @@ FunctionsToExport = @(
     'Get-GDriveAccessToken',
     'Revoke-GDriveToken',
 
+    'Get-GDriveAccessTokenServiceAccountP12',
+    'Get-GDriveAccessTokenServiceAccountJson',
+
     'Get-GDriveSummary',
     'Get-GDriveError',
 

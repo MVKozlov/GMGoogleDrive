@@ -24,7 +24,7 @@ Describe "GMGoogleDrive" {
     Context "misc" {
         It 'should load all functions' {
             $Commands = Get-Command -CommandType Function -Module GMGoogleDrive | Select-Object -ExpandProperty Name
-            $Commands.Count | Should -Be 41
+            $Commands.Count | Should -Be 43
             $Commands -contains 'Request-GDriveAuthorizationCode' | Should -Be $True
             $Commands -contains 'Request-GDriveRefreshToken'      | Should -Be $True
             $Commands -contains 'Get-GDriveAccessToken'           | Should -Be $True
