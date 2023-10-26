@@ -7,8 +7,8 @@
     Name of an folder item to be created
 .PARAMETER ParentID
     Folder ID(s) in which new item will be placed
-.PARAMETER CreationDate
-    Set the creation date of the new folder in Google Drive
+.PARAMETER DateTimeMeta
+    Set the creation date and modification date of the new folder in Google Drive
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -32,7 +32,7 @@ param(
     [Parameter(Position=1)]
     [string[]]$ParentID = @('root'),
 
-    [DateTime]$CreationDate,
+    [DateTime]$DateTimeMeta,
 
     [Parameter(Mandatory)]
     [string]$AccessToken
@@ -48,8 +48,8 @@ param(
         parents = $ParentID
         shortcutDetails = @{ targetId = $TargetID }
     }
-    if($CreationDate) {
-        $Body["createdTime"] = (Get-Date $CreationDate  -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
+    if($DateTimeMeta) {
+        $Body["createdTime"] = (Get-Date $DateTimeMeta  -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
         $Body["modifiedTime"] = $Body["createdTime"]
     }
 
