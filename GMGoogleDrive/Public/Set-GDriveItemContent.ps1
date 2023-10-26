@@ -21,7 +21,7 @@
     Folder ID(s) in which new item will be placed
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
-.PARAMETER ResultProperty
+.PARAMETER Property
     List of properties that will be retured once upload is completed
 .PARAMETER ResumeID
     Upload ID to resume operations in case of uploading errors
@@ -124,7 +124,7 @@ function Set-GDriveItemContent {
         'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
         'keepForever', 'published', # revisions
         IgnoreCase = $false)]
-        [string[]]$ResultProperty = @('kind','id','name','mimeType','parents'),
+        [string[]]$Property = @('kind','id','name','mimeType','parents'),
 
         [string]$ResumeID,
 
@@ -161,7 +161,7 @@ function Set-GDriveItemContent {
         Write-Verbose "Constructed Metadata: $JsonProperty"
     }
     if ($UseMetadataFromFile -and -not $PSBoundParameters.ContainsKey('ID')) {
-        $FileMetadata = Get-Item $InFile
+        $FileMetadata = Get-Item ([Management.Automation.WildcardPattern]::Escape($InFile))
         $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"], "modifiedTime": "{2}", "createdTime": "{3}" }}' -f 
                                 $FileMetadata.Name,
                                 ($ParentID -join '","'),
@@ -208,12 +208,12 @@ function Set-GDriveItemContent {
             Write-Verbose "Updating File $ID"
             # Patch instead of Put! docs are wrong? Put give 404
             $WebRequestParams.Method = 'Patch'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?supportsAllDrives=true&uploadType=resumable&fields=$($ResultProperty -join ',')"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?supportsAllDrives=true&uploadType=resumable&fields=$($Property -join ',')"
         }
         else {
             Write-Verbose "Creating New file"
             $WebRequestParams.Method = 'Post'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsAllDrives=true&uploadType=resumable&fields=$($ResultProperty -join ',')"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsAllDrives=true&uploadType=resumable&fields=$($Property -join ',')"
         }
         if($KeepRevisionForever) {
             $WebRequestParams.Uri = $WebRequestParams.Uri + "&keepRevisionForever=true"

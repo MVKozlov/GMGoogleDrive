@@ -17,7 +17,7 @@
     Folder ID in which new item will be placed
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
-.PARAMETER ResultProperty
+.PARAMETER Property
     List of properties that will be retured once upload is completed
 .PARAMETER ContentType
     Uploaded item Content type (seems google automatically set it to most of uploaded files)
@@ -99,7 +99,7 @@ function Add-GDriveItem {
         'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
         'keepForever', 'published', # revisions
         IgnoreCase = $false)]
-        [string[]]$ResultProperty = @('kind','id','name','mimeType','parents'),
+        [string[]]$Property = @('kind','id','name','mimeType','parents'),
 
         [string]$ContentType = 'application/octet-stream',
 
