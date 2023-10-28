@@ -17,12 +17,18 @@
     Folder ID in which new item will be placed
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
+.PARAMETER Property
+    List of properties that will be retured once upload is completed
 .PARAMETER ContentType
     Uploaded item Content type (seems google automatically set it to most of uploaded files)
 .PARAMETER ChunkSize
     Upload request size
 .PARAMETER ShowProgress
     Show progress bar while uploading
+.PARAMETER UseMetadataFromFile
+    Uses the metadata of the file provided in InFile
+.PARAMETER KeepRevisionForever
+    Set the flag that this revision of the file will be kept forever.
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -63,6 +69,7 @@ function Add-GDriveItem {
 
         [Parameter(Mandatory, ParameterSetName='fileName')]
         [Parameter(Mandatory, ParameterSetName='fileMeta')]
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
         [string]$InFile,
 
         [Parameter(Mandatory, ParameterSetName='dataName')]
@@ -73,6 +80,7 @@ function Add-GDriveItem {
         [Parameter(ParameterSetName='dataName')]
         [Parameter(ParameterSetName='stringName')]
         [Parameter(ParameterSetName='fileName')]
+        [Parameter(ParameterSetName='fileAutomaticMeta')]
         [string[]]$ParentID = @('root'),
 
         [Parameter(ParameterSetName='dataMeta')]
@@ -80,6 +88,18 @@ function Add-GDriveItem {
         [Parameter(ParameterSetName='fileMeta')]
         [Alias('Metadata')]
         [string]$JsonProperty = '',
+
+        [ValidateSet("*",'kind','id','name','mimeType',
+        'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
+        'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
+        'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
+        'viewersCanCopyContent','writersCanShare','permissions','originalFilename','fullFileExtension',
+        'fileExtension','md5Checksum','sha1Checksum','sha256Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+        'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
+        'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
+        'keepForever', 'published', # revisions
+        IgnoreCase = $false)]
+        [string[]]$Property = @('kind','id','name','mimeType','parents'),
 
         [string]$ContentType = 'application/octet-stream',
 
@@ -89,6 +109,11 @@ function Add-GDriveItem {
         [int]$ChunkSize = 4Mb,
 
         [switch]$ShowProgress,
+
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
+        [switch]$UseMetadataFromFile,
+
+        [switch]$KeepRevisionForever,
 
         [Parameter(Mandatory)]
         [string]$AccessToken

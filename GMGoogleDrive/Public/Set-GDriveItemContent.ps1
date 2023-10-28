@@ -21,6 +21,8 @@
     Folder ID(s) in which new item will be placed
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
+.PARAMETER Property
+    List of properties that will be retured once upload is completed
 .PARAMETER ResumeID
     Upload ID to resume operations in case of uploading errors
 .PARAMETER ContentType
@@ -29,6 +31,10 @@
     Upload request size
 .PARAMETER ShowProgress
     Show progress bar while uploading
+.PARAMETER UseMetadataFromFile
+    Uses the metadata of the file provided in InFile
+.PARAMETER KeepRevisionForever
+    Set the flag that this revision of the file will be kept forever.
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -87,6 +93,7 @@ function Set-GDriveItemContent {
 
         [Parameter(Mandatory, ParameterSetName='fileName')]
         [Parameter(Mandatory, ParameterSetName='fileMeta')]
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
         [string]$InFile,
 
         [Parameter(Mandatory, ParameterSetName='dataName')]
@@ -97,6 +104,7 @@ function Set-GDriveItemContent {
         [Parameter(ParameterSetName='dataName')]
         [Parameter(ParameterSetName='stringName')]
         [Parameter(ParameterSetName='fileName')]
+        [Parameter(ParameterSetName='fileAutomaticMeta')]
         [Alias('DestinationID')]
         [string[]]$ParentID = @('root'),
 
@@ -105,6 +113,18 @@ function Set-GDriveItemContent {
         [Parameter(ParameterSetName='fileMeta')]
         [Alias('Metadata')]
         [string]$JsonProperty = '',
+
+        [ValidateSet("*",'kind','id','name','mimeType',
+        'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
+        'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
+        'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
+        'viewersCanCopyContent','writersCanShare','permissions','originalFilename','fullFileExtension',
+        'fileExtension','md5Checksum','sha1Checksum','sha256Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+        'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
+        'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
+        'keepForever', 'published', # revisions
+        IgnoreCase = $false)]
+        [string[]]$Property = @('kind','id','name','mimeType','parents'),
 
         [string]$ResumeID,
 
@@ -116,6 +136,11 @@ function Set-GDriveItemContent {
         [int]$ChunkSize = 4Mb,
 
         [switch]$ShowProgress,
+
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
+        [switch]$UseMetadataFromFile,
+
+        [switch]$KeepRevisionForever,
 
         [Parameter(Mandatory)]
         [string]$AccessToken
@@ -135,8 +160,23 @@ function Set-GDriveItemContent {
         $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
         Write-Verbose "Constructed Metadata: $JsonProperty"
     }
+    if ($UseMetadataFromFile -and -not $PSBoundParameters.ContainsKey('ID')) {
+        $FileMetadata = Get-Item ([Management.Automation.WildcardPattern]::Escape($InFile))
+        $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"], "modifiedTime": "{2}", "createdTime": "{3}" }}' -f 
+                                $FileMetadata.Name,
+                                ($ParentID -join '","'),
+                                (Get-Date $FileMetadata.LastWriteTime -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC),
+                                (Get-Date $FileMetadata.CreationTime  -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
+        Write-Verbose "Constructed Metadata: $JsonProperty"
+    }
+    if ($UseMetadataFromFile -and $PSBoundParameters.ContainsKey('ID')) {
+        $FileMetadata = Get-Item $InFile
+        $JsonProperty = '{{ "modifiedTime": "{2}" }}' -f 
+                                (Get-Date $FileMetadata.LastWriteTime -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
+        Write-Verbose "Constructed Metadata: $JsonProperty"
+    }
     try {
-        if ($PSCmdlet.ParameterSetName -in 'fileName','fileMeta') {
+        if ($PSCmdlet.ParameterSetName -in 'fileName','fileMeta','fileAutomaticMeta') {
             $stream = New-Object System.IO.FileStream $InFile, 'Open'
         }
         else {
@@ -168,12 +208,15 @@ function Set-GDriveItemContent {
             Write-Verbose "Updating File $ID"
             # Patch instead of Put! docs are wrong? Put give 404
             $WebRequestParams.Method = 'Patch'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?supportsAllDrives=true&uploadType=resumable&fields=kind,id,name,mimeType,parents"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?supportsAllDrives=true&uploadType=resumable&fields=$($Property -join ',')"
         }
         else {
             Write-Verbose "Creating New file"
             $WebRequestParams.Method = 'Post'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsAllDrives=true&uploadType=resumable&fields=kind,id,name,mimeType,parents"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsAllDrives=true&uploadType=resumable&fields=$($Property -join ',')"
+        }
+        if($KeepRevisionForever) {
+            $WebRequestParams.Uri = $WebRequestParams.Uri + "&keepRevisionForever=true"
         }
         Write-Verbose ("URI: " + $WebRequestParams.Uri)
 
@@ -245,7 +288,12 @@ function Set-GDriveItemContent {
                         ))
                     {
                         Write-Verbose 'Single request upload'
-                        $WebRequestParams.Body = $RawContent
+                        [byte[]]$buffer = New-Object byte[] $stream.Length
+                        $len = $stream.Read($buffer, 0, $stream.Length);
+                        if ($len -ne $stream.Length) {
+                            throw "Stream read error: Readed $len bytes instead of $($stream.Length)"
+                        }
+                        $WebRequestParams.Body = $buffer
 
                         Write-Verbose ("Content-Length: {0}" -f $stream.Length)
                         if ($ShowProgress) {
