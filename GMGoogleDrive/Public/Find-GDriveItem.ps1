@@ -56,7 +56,7 @@ param(
     [Alias('Metadata')]
     [string[]]$Property = @(),
 
-    [ValidateSet(    'createdTime', 'folder', 'modifiedByMeTime', 'modifiedTime', 'name', 'quotaBytesUsed', 'recency',
+    [ValidateSet(   'createdTime', 'folder', 'modifiedByMeTime', 'modifiedTime', 'name', 'quotaBytesUsed', 'recency',
                     'sharedWithMeTime', 'starred', 'viewedByMeTime',
                     'createdTime desc', 'folder desc', 'modifiedByMeTime desc', 'modifiedTime desc', 'name desc', 'quotaBytesUsed desc', 'recency desc',
                     'sharedWithMeTime desc', 'starred desc', 'viewedByMeTime desc'

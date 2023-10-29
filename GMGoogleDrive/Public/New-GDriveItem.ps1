@@ -9,6 +9,8 @@
     Folder ID(s) in which new item will be placed
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
+.PARAMETER Property
+    List of properties that will be retured once item is created
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -41,6 +43,18 @@ function New-GDriveItem {
         [Alias('Metadata')]
         [string]$JsonProperty = '',
 
+        [ValidateSet("*",'kind','id','name','mimeType',
+        'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
+        'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
+        'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
+        'viewersCanCopyContent','writersCanShare','permissions','originalFilename','fullFileExtension',
+        'fileExtension','md5Checksum','sha1Checksum','sha256Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+        'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
+        'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
+        'keepForever', 'published', # revisions
+        IgnoreCase = $false)]
+        [string[]]$Property = @('kind','id','name','mimeType','parents'),
+    
         [Parameter(Mandatory)]
         [string]$AccessToken
     )
@@ -57,8 +71,9 @@ function New-GDriveItem {
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
     }
-    # Full property set will be supported after the rain on Thursday ;-)
-    $Property = 'kind','id','name','mimeType','parents'
+    if ($Property -contains "*") {
+        $Property = "*"
+    }
     $Uri = '{0}?supportsAllDrives=true&fields={1}' -f $GDriveUri, ($Property -join ',')
     Write-Verbose "URI: $Uri"
     Write-Verbose "RequestBody: $JsonProperty"
