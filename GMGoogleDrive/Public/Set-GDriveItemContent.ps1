@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Creates or updates GoogleDrive Item, set metadata and upload content
 .DESCRIPTION
@@ -288,16 +288,11 @@ function Set-GDriveItemContent {
                     if (($stream.Length -eq 0) -or # for null-sized files just 'close' upload
                         ($UploadedSize -eq 0 -and
                          $stream.Length -le $ChunkSize -and
-                         ($PSCmdlet.ParameterSetName -notin 'fileName','fileMeta')
+                         ($PSCmdlet.ParameterSetName -notin 'fileName','fileMeta','fileAutomaticMeta')
                         ))
                     {
                         Write-Verbose 'Single request upload'
-                        [byte[]]$buffer = New-Object byte[] $stream.Length
-                        $len = $stream.Read($buffer, 0, $stream.Length);
-                        if ($len -ne $stream.Length) {
-                            throw "Stream read error: Readed $len bytes instead of $($stream.Length)"
-                        }
-                        $WebRequestParams.Body = $buffer
+                        $WebRequestParams.Body = $RawContent
 
                         Write-Verbose ("Content-Length: {0}" -f $stream.Length)
                         if ($ShowProgress) {
