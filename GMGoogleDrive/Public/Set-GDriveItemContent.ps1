@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Creates or updates GoogleDrive Item, set metadata and upload content
 .DESCRIPTION
@@ -21,6 +21,8 @@
     Folder ID(s) in which new item will be placed
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
+.PARAMETER UseMetadataFromFile
+    Uses the metadata of the file provided in InFile
 .PARAMETER Property
     List of properties that will be retured once upload is completed
 .PARAMETER ResumeID
@@ -31,8 +33,6 @@
     Upload request size
 .PARAMETER ShowProgress
     Show progress bar while uploading
-.PARAMETER UseMetadataFromFile
-    Uses the metadata of the file provided in InFile
 .PARAMETER KeepRevisionForever
     Set the flag that this revision of the file will be kept forever.
 .PARAMETER AccessToken
@@ -114,6 +114,9 @@ function Set-GDriveItemContent {
         [Alias('Metadata')]
         [string]$JsonProperty = '',
 
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
+        [switch]$UseMetadataFromFile,
+
         [ValidateSet("*",'kind','id','name','mimeType',
         'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
         'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
@@ -136,9 +139,6 @@ function Set-GDriveItemContent {
         [int]$ChunkSize = 4Mb,
 
         [switch]$ShowProgress,
-
-        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
-        [switch]$UseMetadataFromFile,
 
         [switch]$KeepRevisionForever,
 
