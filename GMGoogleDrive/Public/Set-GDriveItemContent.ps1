@@ -156,23 +156,23 @@ function Set-GDriveItemContent {
         [byte[]]$RawContent = $Encoding.GetBytes($StringContent)
         Write-Verbose "Encoded $($StringContent.Length) characters to $($RawContent.Count) bytes ($($Encoding.EncodingName))"
     }
-    if ($PSCmdlet.ParameterSetName -in 'stringName','dataName','fileName') {
-        $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
-        Write-Verbose "Constructed Metadata: $JsonProperty"
-    }
-    if ($UseMetadataFromFile -and -not $PSBoundParameters.ContainsKey('ID')) {
-        $FileMetadata = Get-Item ([Management.Automation.WildcardPattern]::Escape($InFile))
-        $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"], "modifiedTime": "{2}", "createdTime": "{3}" }}' -f 
-                                $FileMetadata.Name,
-                                ($ParentID -join '","'),
-                                (Get-Date $FileMetadata.LastWriteTime -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC),
-                                (Get-Date $FileMetadata.CreationTime  -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
-        Write-Verbose "Constructed Metadata: $JsonProperty"
-    }
-    if ($UseMetadataFromFile -and $PSBoundParameters.ContainsKey('ID')) {
-        $FileMetadata = Get-Item $InFile
-        $JsonProperty = '{{ "modifiedTime": "{2}" }}' -f 
-                                (Get-Date $FileMetadata.LastWriteTime -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
+    if ($PSCmdlet.ParameterSetName -in 'stringName', 'dataName', 'fileName', 'fileAutomaticMeta') {
+        $toJson = @{}
+        if ($UseMetadataFromFile) {
+            #$FileMetadata = Get-Item ([Management.Automation.WildcardPattern]::Escape($InFile))
+            $FileMetadata = Get-Item -LiteralPath $InFile
+            $toJson.modifiedTime = $FileMetadata.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            if (-not $PSBoundParameters.ContainsKey('ID')) {
+                $toJson.name = $FileMetadata.Name
+                $toJson.parents = $ParentID
+                $toJson.createdTime = $FileMetadata.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            }
+        }
+        else {
+            $toJson.name = $Name
+            $toJson.parents = $ParentID
+        }
+        $JsonProperty = $toJson | ConvertTo-Json
         Write-Verbose "Constructed Metadata: $JsonProperty"
     }
     try {
@@ -208,13 +208,17 @@ function Set-GDriveItemContent {
             Write-Verbose "Updating File $ID"
             # Patch instead of Put! docs are wrong? Put give 404
             $WebRequestParams.Method = 'Patch'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?supportsAllDrives=true&uploadType=resumable&fields=$($Property -join ',')"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)"
         }
         else {
             Write-Verbose "Creating New file"
             $WebRequestParams.Method = 'Post'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsAllDrives=true&uploadType=resumable&fields=$($Property -join ',')"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)"
         }
+        if ($Property -contains "*") {
+            $Property = "*"
+        }
+        $WebRequestParams.Uri += "?supportsAllDrives=true&uploadType=resumable&fields={0}" -f ($Property -join ',')
         if($KeepRevisionForever) {
             $WebRequestParams.Uri = $WebRequestParams.Uri + "&keepRevisionForever=true"
         }
