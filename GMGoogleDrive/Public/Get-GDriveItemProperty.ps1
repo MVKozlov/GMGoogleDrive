@@ -40,7 +40,7 @@ param(
     'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
     'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
     'viewersCanCopyContent','writersCanShare','permissions','folderColorRgb','originalFilename','fullFileExtension',
-    'fileExtension','md5Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+    'fileExtension','md5Checksum','sha256Checksum','sha1Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
     'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
     'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
     'keepForever', 'published', # revisions
@@ -55,10 +55,10 @@ param(
         "Authorization" = "Bearer $AccessToken"
     }
     $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
-    if ($Property -contains "*") {
-         $Property = "*"
-    }
     $Uri = '{0}{1}{2}?supportsAllDrives=true' -f $GDriveUri, $ID, $Revision
+    if ($Property -contains "*") {
+        $Property = "*"
+    }
     if ($Property) {
         $Uri += '&fields={0}' -f ($Property -join ',')
     }
