@@ -8,9 +8,23 @@ $GDriveTrashUri = "https://www.googleapis.com/drive/v3/files/trash"
 
 $GDriveAuthScope = "https://www.googleapis.com/auth/drive"
 
+$GDriveOAuth2Audience = "https://oauth2.googleapis.com/token"
+
 #TODO: https://developers.google.com/drive/api/v3/batch (may be?)
 
 $GDriveProxySettings = @{}
+
+#region Load Private Functions
+Try {
+    Get-ChildItem "$PSScriptRoot\Private\*.ps1" -Exclude *.tests.ps1, *profile.ps1 | ForEach-Object {
+        #$Function = $_.Name
+        . $_.FullName
+    }
+} Catch {
+    Write-Warning ("{0}: {1}" -f $Function,$_.Exception.Message)
+    Continue
+}
+#endregion Load Private Functions
 
 #region Load Public Functions
 Try {
