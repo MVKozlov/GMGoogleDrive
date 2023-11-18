@@ -1,12 +1,12 @@
 ﻿#$privateKey = [convert]::FromBase64String($json.private_key -replace "-{5}(BEGIN|END) (ENCRYPTED )?PRIVATE KEY-{5}")
 
-function Import5AsRSA([bytes[]]$private_bytes) {
+function Import5AsRSA([Byte[]]$private_bytes) {
     $k = [System.Security.Cryptography.CngKey]::Import($private_bytes, [System.Security.Cryptography.CngKeyBlobFormat]::Pkcs8PrivateBlob)
     $rsa = [System.Security.Cryptography.RSACng]::new($k)
     $rsa
 }
 
-function Import7AsRSA([bytes[]]$private_bytes, [bytes[]]$passwordBytes) {
+function Import7AsRSA([Byte[]]$private_bytes, [Byte[]]$passwordBytes) {
     $rsa = [System.Security.Cryptography.RSACryptoServiceProvider]::new()
     $count_read=0
     if ($passwordBytes) {
