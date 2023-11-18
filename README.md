@@ -7,7 +7,9 @@ Google Drive REST Api module for Powershell
 - [Usage](#usage)
 - [Error Handling](#error-handling)
 - [Automate things](#automate-things)
+- [Using a service account](#using-a-service-account)
 
+---
 
 ### GoogleDrive Setup
 Google Drive is a free service for file storage files. In order to use this storage you need a Google (or Google Apps) user which will own the files, and a Google API client.
@@ -167,3 +169,25 @@ if ($Token) {
   # [...]
 }
 ```
+
+### Using a service account
+
+Using a service account allows you to upload data to folders that are shared with the service account.
+
+In Google Workspace enterprise environments, it is also possible to grant impersonation rights to the service account. With these rights, the service account can act as a user (without OAuth consent screen).
+
+Please check the Google documentation:
+ - [Create a service account](https://developers.google.com/workspace/guides/create-credentials#create_a_service_account)
+ - [Assign impersonation rights (domain-wide delegation)](https://developers.google.com/workspace/guides/create-credentials#optional_set_up_domain-wide_delegation_for_a_service_account)
+
+Google offers two types of service user files .json and .p12. Both types are implemented in this module.
+``` PowerShell
+Get-GDriveAccessToken `
+  -PathServiceAccountFile "C:\temp\ServiceAccount.json" `
+  -ImpersonationUser "user@domain.com"
+
+Get-GDriveAccessToken `
+  -PathServiceAccountFile "C:\temp\certificate.p12" `
+  -ServiceAccountMail "account@xxx.iam.gserviceaccount.com" `
+  -ImpersonationUser "user@domain.com"
+ ```

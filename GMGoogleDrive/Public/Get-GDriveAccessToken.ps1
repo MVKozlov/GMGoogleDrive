@@ -12,7 +12,7 @@
 .PARAMETER PathServiceAccountFile
     Path to the P12 Certificate
 .PARAMETER CertificatePassword
-    SercueString with the certificate password
+    SercueString with the certificate password (Google default password: notasecret )
 .PARAMETER ServiceAccountMail
     mail address of the serviceaccount
 .PARAMETER SessionDuration
