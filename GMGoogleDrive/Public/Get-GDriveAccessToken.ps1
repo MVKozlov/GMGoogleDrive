@@ -198,7 +198,7 @@ function Get-GDriveAccessToken {
                 ImpersonationUser = $ImpersonationUser
                 ExpirationSec = $SessionDuration
             }
-            $Token = GetJWTToken @tokenparams
+            $Token = Get-JWTToken @tokenparams
             $Body = @{
                 grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
                 assertion = $Token
