@@ -7,7 +7,7 @@
 #   -Issuer ps-xxxxxxxxgserviceaccount.com
 #   -Scope 'https://www.googleapis.com/auth/drive'
 
-function Get-JWTToken {
+function NewJWTToken {
 [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

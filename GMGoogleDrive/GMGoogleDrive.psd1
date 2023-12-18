@@ -34,7 +34,7 @@ Copyright = '(c) 2017-2022 Max Kozlov. All rights reserved.'
 Description = 'Google Drive REST Api module'
 
 # Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '4.0'
+PowerShellVersion = '5.1'
 
 # Name of the Windows PowerShell host required by this module
 # PowerShellHostName = ''

@@ -86,7 +86,7 @@ function Get-GDriveAccessToken {
         [Parameter(ParameterSetName='p12d')]
         [byte[]]$KeyData,
         [Parameter(ParameterSetName='cert')]
-        [System.Security.Cryptography..X509Certificate2]$Certificate,
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate,
 
         [Parameter(ParameterSetName='p12')]
         [Parameter(ParameterSetName='p12d')]
@@ -109,10 +109,10 @@ function Get-GDriveAccessToken {
 
         [Parameter(ParameterSetName='json_path')]
         [Parameter(ParameterSetName='json_content')]
-        [Parameter(ParameterSetName='p12', Mandatory=$true)]
-        [Parameter(ParameterSetName='p12d', Mandatory=$true)]
-        [Parameter(ParameterSetName='p8', Mandatory=$true, ValueFromPipelineByPropertyName)]
-        [Parameter(ParameterSetName='cert', Mandatory=$true)]
+        [Parameter(ParameterSetName='p12')]
+        [Parameter(ParameterSetName='p12d')]
+        [Parameter(ParameterSetName='p8', ValueFromPipelineByPropertyName)]
+        [Parameter(ParameterSetName='cert')]
         [string]$ImpersonationUser,
 
         [Parameter(ParameterSetName='json_path')]
@@ -198,7 +198,7 @@ function Get-GDriveAccessToken {
                 ImpersonationUser = $ImpersonationUser
                 ExpirationSec = $SessionDuration
             }
-            $Token = Get-JWTToken @tokenparams
+            $Token = NewJWTToken @tokenparams
             $Body = @{
                 grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
                 assertion = $Token
