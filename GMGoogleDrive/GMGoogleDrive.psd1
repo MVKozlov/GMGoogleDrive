@@ -13,7 +13,7 @@
 RootModule = 'GMGoogleDrive'
 
 # Version number of this module.
-ModuleVersion = '1.1.0.0'
+ModuleVersion = '1.2.0.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -28,13 +28,13 @@ Author = 'Max Kozlov'
 CompanyName = 'NA'
 
 # Copyright statement for this module
-Copyright = '(c) 2017-2022 Max Kozlov. All rights reserved.'
+Copyright = '(c) 2017-2024 Max Kozlov. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Google Drive REST Api module'
 
 # Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '4.0'
+PowerShellVersion = '5.1'
 
 # Name of the Windows PowerShell host required by this module
 # PowerShellHostName = ''
