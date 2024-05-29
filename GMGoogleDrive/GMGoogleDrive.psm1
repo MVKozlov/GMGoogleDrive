@@ -5,6 +5,7 @@ $GDriveAccountsTokenUri = "https://accounts.google.com/o/oauth2/v2/auth"
 $GDriveRevokeTokenUri = "https://accounts.google.com/o/oauth2/revoke"
 $GDriveAboutURI = "https://www.googleapis.com/drive/v2/about"
 $GDriveTrashUri = "https://www.googleapis.com/drive/v3/files/trash"
+$GDriveSheetsUri = "https://sheets.googleapis.com/v4/spreadsheets"
 
 $GDriveAuthScope = "https://www.googleapis.com/auth/drive"
 
