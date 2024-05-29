@@ -9,6 +9,8 @@
     Folder ID(s) from which item will be removed
 .PARAMETER NewParentID
     Folder ID(s) in which item will be placed
+.PARAMETER Property
+    List of properties that will be retured once item is moved
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
@@ -38,6 +40,18 @@ param(
     [Alias('DestinationID')]
     [string[]]$NewParentID,
 
+    [ValidateSet("*",'kind','id','name','mimeType',
+    'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
+    'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
+    'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
+    'viewersCanCopyContent','writersCanShare','permissions','originalFilename','fullFileExtension',
+    'fileExtension','md5Checksum','sha1Checksum','sha256Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+    'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
+    'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
+    'keepForever', 'published', # revisions
+    IgnoreCase = $false)]
+    [string[]]$Property = @('kind','id','name','mimeType','parents'),
+
     [Parameter(Mandatory)]
     [string]$AccessToken
 )
@@ -51,7 +65,9 @@ param(
             return
         }
     }
-    $Property = 'kind','id','name','mimeType','parents'
+    if ($Property -contains "*") {
+        $Property = "*"
+    }
     $Uri = '{0}{1}?supportsAllDrives=true&fields={2}&removeParents={3}&addParents={4}' -f $GDriveUri, $ID, ($Property -join ','), ($ParentID -join ','), ($NewParentID -join ',')
     Write-Verbose "Move URI: $Uri"
 

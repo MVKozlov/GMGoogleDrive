@@ -21,6 +21,8 @@
     Folder ID(s) in which new item will be placed
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
+.PARAMETER UseMetadataFromFile
+    Uses the metadata of the file provided in InFile
 .PARAMETER Property
     List of properties that will be retured once upload is completed
 .PARAMETER ResumeID
@@ -31,8 +33,6 @@
     Upload request size
 .PARAMETER ShowProgress
     Show progress bar while uploading
-.PARAMETER UseMetadataFromFile
-    Uses the metadata of the file provided in InFile
 .PARAMETER KeepRevisionForever
     Set the flag that this revision of the file will be kept forever.
 .PARAMETER AccessToken
@@ -114,6 +114,9 @@ function Set-GDriveItemContent {
         [Alias('Metadata')]
         [string]$JsonProperty = '',
 
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
+        [switch]$UseMetadataFromFile,
+
         [ValidateSet("*",'kind','id','name','mimeType',
         'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
         'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
@@ -137,9 +140,6 @@ function Set-GDriveItemContent {
 
         [switch]$ShowProgress,
 
-        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
-        [switch]$UseMetadataFromFile,
-
         [switch]$KeepRevisionForever,
 
         [Parameter(Mandatory)]
@@ -156,23 +156,23 @@ function Set-GDriveItemContent {
         [byte[]]$RawContent = $Encoding.GetBytes($StringContent)
         Write-Verbose "Encoded $($StringContent.Length) characters to $($RawContent.Count) bytes ($($Encoding.EncodingName))"
     }
-    if ($PSCmdlet.ParameterSetName -in 'stringName','dataName','fileName') {
-        $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"] }}' -f $Name, ($ParentID -join '","')
-        Write-Verbose "Constructed Metadata: $JsonProperty"
-    }
-    if ($UseMetadataFromFile -and -not $PSBoundParameters.ContainsKey('ID')) {
-        $FileMetadata = Get-Item ([Management.Automation.WildcardPattern]::Escape($InFile))
-        $JsonProperty = '{{ "name": "{0}", "parents": ["{1}"], "modifiedTime": "{2}", "createdTime": "{3}" }}' -f 
-                                $FileMetadata.Name,
-                                ($ParentID -join '","'),
-                                (Get-Date $FileMetadata.LastWriteTime -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC),
-                                (Get-Date $FileMetadata.CreationTime  -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
-        Write-Verbose "Constructed Metadata: $JsonProperty"
-    }
-    if ($UseMetadataFromFile -and $PSBoundParameters.ContainsKey('ID')) {
-        $FileMetadata = Get-Item $InFile
-        $JsonProperty = '{{ "modifiedTime": "{2}" }}' -f 
-                                (Get-Date $FileMetadata.LastWriteTime -Format "yyyy-MM-ddTHH:mm:ss.fffzzz" -AsUTC)
+    if ($PSCmdlet.ParameterSetName -in 'stringName', 'dataName', 'fileName', 'fileAutomaticMeta') {
+        $toJson = @{}
+        if ($UseMetadataFromFile) {
+            #$FileMetadata = Get-Item ([Management.Automation.WildcardPattern]::Escape($InFile))
+            $FileMetadata = Get-Item -LiteralPath $InFile
+            $toJson.modifiedTime = $FileMetadata.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            if (-not $PSBoundParameters.ContainsKey('ID')) {
+                $toJson.name = $FileMetadata.Name
+                $toJson.parents = $ParentID
+                $toJson.createdTime = $FileMetadata.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            }
+        }
+        else {
+            $toJson.name = $Name
+            $toJson.parents = $ParentID
+        }
+        $JsonProperty = $toJson | ConvertTo-Json
         Write-Verbose "Constructed Metadata: $JsonProperty"
     }
     try {
@@ -208,13 +208,17 @@ function Set-GDriveItemContent {
             Write-Verbose "Updating File $ID"
             # Patch instead of Put! docs are wrong? Put give 404
             $WebRequestParams.Method = 'Patch'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)?supportsAllDrives=true&uploadType=resumable&fields=$($Property -join ',')"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)$($ID)"
         }
         else {
             Write-Verbose "Creating New file"
             $WebRequestParams.Method = 'Post'
-            $WebRequestParams.Uri = "$($GDriveUploadUri)?supportsAllDrives=true&uploadType=resumable&fields=$($Property -join ',')"
+            $WebRequestParams.Uri = "$($GDriveUploadUri)"
         }
+        if ($Property -contains "*") {
+            $Property = "*"
+        }
+        $WebRequestParams.Uri += "?supportsAllDrives=true&uploadType=resumable&fields={0}" -f ($Property -join ',')
         if($KeepRevisionForever) {
             $WebRequestParams.Uri = $WebRequestParams.Uri + "&keepRevisionForever=true"
         }
@@ -284,16 +288,11 @@ function Set-GDriveItemContent {
                     if (($stream.Length -eq 0) -or # for null-sized files just 'close' upload
                         ($UploadedSize -eq 0 -and
                          $stream.Length -le $ChunkSize -and
-                         ($PSCmdlet.ParameterSetName -notin 'fileName','fileMeta')
+                         ($PSCmdlet.ParameterSetName -notin 'fileName','fileMeta','fileAutomaticMeta')
                         ))
                     {
                         Write-Verbose 'Single request upload'
-                        [byte[]]$buffer = New-Object byte[] $stream.Length
-                        $len = $stream.Read($buffer, 0, $stream.Length);
-                        if ($len -ne $stream.Length) {
-                            throw "Stream read error: Readed $len bytes instead of $($stream.Length)"
-                        }
-                        $WebRequestParams.Body = $buffer
+                        $WebRequestParams.Body = $RawContent
 
                         Write-Verbose ("Content-Length: {0}" -f $stream.Length)
                         if ($ShowProgress) {

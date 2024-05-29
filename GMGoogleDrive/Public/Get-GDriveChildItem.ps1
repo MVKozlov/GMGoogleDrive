@@ -9,6 +9,8 @@
     Properties to return
 .PARAMETER OrderBy
     Set output order
+.PARAMETER AllDriveItems
+    Get result from all drives (inluding shared drives)
 .PARAMETER AllResults
     Collect all results in one output
 .PARAMETER NextPageToken
@@ -40,7 +42,7 @@ param(
     'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
     'modifiedByMeTime','sharedWithMeTime','sharingUser','owners','lastModifyingUser','shared','ownedByMe',
     'viewersCanCopyContent','writersCanShare','permissions','folderColorRgb','originalFilename','fullFileExtension',
-    'fileExtension','md5Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
+    'fileExtension','md5Checksum','sha256Checksum','sha1Checksum','size','quotaBytesUsed','headRevisionId','contentHints',
     'imageMediaMetadata','videoMediaMetadata','capabilities','isAppAuthorized','hasThumbnail','thumbnailVersion',
     'modifiedByMe','trashingUser','trashedTime','teamDriveId','hasAugmentedPermissions',
     'keepForever', 'published', # revisions
@@ -55,6 +57,9 @@ param(
     )]
     [string[]]$OrderBy,
 
+    [parameter(Mandatory=$false)]
+    [switch]$AllDriveItems,
+
     [Parameter(ParameterSetName='All')]
     [switch]$AllResults,
 
@@ -68,7 +73,7 @@ param(
     [string]$AccessToken
 )
     if ($PSBoundParameters.ContainsKey('ParentID')) {
-        $PSBoundParameters['Query'] = "'$ParentID'+in+parents"
+        $PSBoundParameters['Query'] = "'$ParentID' in parents"
         [void]$PSBoundParameters.Remove('ParentID')
     }
     else {

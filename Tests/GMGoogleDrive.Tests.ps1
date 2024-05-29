@@ -24,7 +24,7 @@ Describe "GMGoogleDrive" {
     Context "misc" {
         It 'should load all functions' {
             $Commands = Get-Command -CommandType Function -Module GMGoogleDrive | Select-Object -ExpandProperty Name
-            $Commands.Count | Should -Be 43
+            $Commands.Count | Should -Be 41
             $Commands -contains 'Request-GDriveAuthorizationCode' | Should -Be $True
             $Commands -contains 'Request-GDriveRefreshToken'      | Should -Be $True
             $Commands -contains 'Get-GDriveAccessToken'           | Should -Be $True
@@ -91,7 +91,7 @@ Describe "Request-GDriveAuthorizationCode" {
     }
 }
 Describe "Request-GDriveRefreshToken" {
-    It "should be MANUAL operation and you lose your refresh token, so does NNOT test it" -Skip {
+    It "should be MANUAL operation and you lose your refresh token, so does NOT test it" -Skip {
         { $global:refresh = Request-GDriveRefreshToken -ClientID $oauth_json.web.client_id -ClientSecret $oauth_json.web.client_secret -AuthorizationCode $code } | Should -Not -Throw
         $refresh    | Should -Not -BeNullOrEmpty
         $refresh.refresh_token  | Should -Not -BeNullOrEmpty
@@ -131,10 +131,11 @@ Describe "New-GDriveFolder" {
 }
 Describe "New-GDriveItem" {
     It "should create empty file" {
-        { $script:file1 = New-GDriveItem -AccessToken $access.access_token -Name "PesterTestFile1" -ParentID $folder.id } | Should -Not -Throw
+        { $script:file1 = New-GDriveItem -AccessToken $access.access_token -Name "PesterTestFile1" -ParentID $folder.id -Property 'id','name','mimeType','parents','size' } | Should -Not -Throw
         $file1.id | Should -Not -BeNullOrEmpty
         $file1.name | Should -Be "PesterTestFile1"
         $file1.mimeType | Should -Be "application/octet-stream"
+        $file1.size | Should -Be 0
     }
 }
 
@@ -157,14 +158,16 @@ Describe "Set-GDriveItemContent" {
     }
     It "should set file1 content by multiple chunks" {
         [byte[]]$buffer = 0..1124kb | ForEach-Object { [byte]($_ -band 0xff) }
-        { $script:file1d = Set-GDriveItemContent @params -ID $file1.id -RawContent $buffer -ChunkSize 256kb | Select-Object -Expand Item } | Should -Not -Throw
+        { $script:file1d = Set-GDriveItemContent @params -ID $file1.id -RawContent $buffer -ChunkSize 256kb -Property id,size | Select-Object -Expand Item } | Should -Not -Throw
         $file1d | Should -Not -BeNullOrEmpty
         $file1d.id | Should -Be $file1.id
+        $file1d.size | Should -Be (1124kb + 1)
     }
     It "should set file1 content to test string" {
-        { $script:file1c = Set-GDriveItemContent @params -ID $file1.id -StringContent 'test file1' | Select-Object -Expand Item } | Should -Not -Throw
+        { $script:file1c = Set-GDriveItemContent @params -ID $file1.id -StringContent 'test file1' -Property id,size | Select-Object -Expand Item } | Should -Not -Throw
         $file1c | Should -Not -BeNullOrEmpty
         $file1c.id | Should -Be $file1.id
+        $file1c.size | Should -Be 10
     }
 }
 
@@ -195,12 +198,37 @@ Describe "Add-GDriveItem" {
     Context "file" {
         BeforeAll {
             'test file4' | Set-Content -Path $global:tmpfile -Encoding ASCII
+            $script:tmpItem = Get-Item $global:tmpfile
+            $script:tmpItem.CreationTimeUtc = '2023-02-03 13:14:15'
+            $script:tmpItem.LastWriteTimeUtc = '2023-04-05 16:17:18'
         }
         It "should create file from file" {
             { $script:file4 = Add-GDriveItem @params -Name "PesterTestFile4" -InFile $global:tmpfile | Select-Object -Expand Item } | Should -Not -Throw
             $file4.id | Should -Not -BeNullOrEmpty
             $file4.name | Should -Be "PesterTestFile4"
             $file4.mimeType | Should -Be "text/plain"
+        }
+        It "should create file from file with properties from file" {
+            { $script:file4a = Add-GDriveItem @params -UseMetadataFromFile -InFile $global:tmpfile -Property id,
+                name, mimeType, size, createdTime, modifiedTime |
+                    Select-Object -Expand Item } | Should -Not -Throw
+            $file4a.id | Should -Not -BeNullOrEmpty
+            $file4a.name | Should -Be $script:tmpItem.Name
+            $file4a.mimeType | Should -Be "text/plain"
+            $file4a.size | Should -Be 12
+            # on PSv5.1 times returned are strings
+            # on PSv7 times are datetime
+            # so let's convert it both to string
+            $cTime = $script:tmpItem.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            $mTime = $script:tmpItem.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            if ($file4a.createdTime -isnot [string]) {
+                $file4a.createdTime = $file4a.createdTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            }
+            if ($file4a.modifiedTime -isnot [string]) {
+                $file4a.modifiedTime = $file4a.modifiedTime.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
+            }
+            $file4a.createdTime | Should -Be $cTime
+            $file4a.modifiedTime | Should -Be $mTime
         }
     }
     Context "application/octet-stream" {
@@ -231,9 +259,10 @@ Describe "Get-GDriveItemProperty" {
 }
 Describe "Copy-GDriveItem" {
         It "should create file from existing item" {
-            { $script:file6 = Copy-GDriveItem -AccessToken $access.access_token -ID $file1.id -Name "PesterTestFile6" } | Should -Not -Throw
+            { $script:file6 = Copy-GDriveItem -AccessToken $access.access_token -ID $file1.id -Name "PesterTestFile6" -Property 'id','name','size' } | Should -Not -Throw
             $file6.id | Should -Not -BeNullOrEmpty
             $file6.name | Should -Be "PesterTestFile6"
+            $file6.size | Should -Be 10
         }
 }
 Describe "Rename-GDriveItem" {
@@ -245,13 +274,14 @@ Describe "Rename-GDriveItem" {
 }
 Describe "Move-GDriveItem" {
         It "should move file1 to root" {
-            { $script:file1 = Move-GDriveItem -AccessToken $access.access_token -ID $file1.id -NewParentID 'root' } | Should -Not -Throw
+            { $script:file1 = Move-GDriveItem -AccessToken $access.access_token -ID $file1.id -NewParentID 'root' -Property 'id','name','parents','size'} | Should -Not -Throw
             $file1.parents.Count | Should -Be 1
             $file1.parents[0] | Should -Be $summary.rootFolderId
+            $file1.size | Should -Be 10
         }
 }
 Describe "Find-GDriveItem" {
-        It "should find 6 files" {
+        It "should find 7 files" {
             { $script:files = Find-GDriveItem -AccessToken $access.access_token -Query 'name contains "PesterTestFile"' } | Should -Not -Throw
             $files.files.Count | Should -Be 6
         }
@@ -261,13 +291,13 @@ Describe "Get-GDriveChildItem" {
         { $script:list = Get-GDriveChildItem -AccessToken $access.access_token -ParentID $folder.id  } | Should -Not -Throw
         $list | Should -Not -BeNullOrEmpty
         $list.files | Should -Not -BeNullOrEmpty
-        $list.files.Count | Should -Be 5
+        $list.files.Count | Should -Be 6
     }
     It "should return item list (all)" {
         { $script:list = Get-GDriveChildItem -AccessToken $access.access_token -ParentID $folder.id -AllResults -PageSize 2 } | Should -Not -Throw
         $list | Should -Not -BeNullOrEmpty
         $list.files | Should -Not -BeNullOrEmpty
-        $list.files.Count | Should -Be 5
+        $list.files.Count | Should -Be 6
     }
 }
 
@@ -276,14 +306,16 @@ Describe "Get-GDriveItemContent" {
         $params = @{
             AccessToken = $access.access_token
         }
+        $Enc = [System.Text.Encoding]::UTF8
     }
     Context "string" {
         It "should get file content as string" {
-            { $script:content = Get-GDriveItemContent @params -ID $file5.id } | Should -Not -Throw
+            { $script:content = Get-GDriveItemContent @params -ID $file5.id -Encoding $Enc
+            } | Should -Not -Throw
             $content | Should -Be 'test file5'
         }
         It "should get partial content as string" {
-            { $script:content = Get-GDriveItemContent @params -ID $file5.id -Offset 3 -Length 5 } | Should -Not -Throw
+            { $script:content = Get-GDriveItemContent @params -ID $file5.id -Encoding $Enc -Offset 3 -Length 5 } | Should -Not -Throw
             $content | Should -Be 't fil'
         }
     }

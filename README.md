@@ -1,4 +1,5 @@
 # GMGoogleDrive
+
 Google Drive REST Api module for Powershell
 
 ## Table of Contents
@@ -7,10 +8,14 @@ Google Drive REST Api module for Powershell
 - [Usage](#usage)
 - [Error Handling](#error-handling)
 - [Automate things](#automate-things)
+- [Using a service account](#using-a-service-account)
 
+---
 
 ### GoogleDrive Setup
+
 Google Drive is a free service for file storage files. In order to use this storage you need a Google (or Google Apps) user which will own the files, and a Google API client.
+
 1. Go to the [Google Developers console](https://console.developers.google.com/project) and create a new project.
 2. Go to **APIs & Auth** > **APIs** and enable **Drive API**.
 3. Click **Credentials**
@@ -20,18 +25,22 @@ Google Drive is a free service for file storage files. In order to use this stor
 7. Save your **Client ID** and **Secret** or full OAuth string
 8. Now you will have a `Client ID`, `Client Secret`, and `Redirect URL`.
 9. You can convert oauth string to oauth `PSObject` for future use
+
     ``` powershell
     $oauth_json = '{"web":{"client_id":"10649365436h34234f34hhqd423478fsdfdo.apps.googleusercontent.com",
       "client_secret":"h78H78h7*H78h87",
       "redirect_uris":["https://developers.google.com/oauthplayground"]}}' | ConvertFrom-Json
     ```
+
 10. Request Authroization Code  
 
     by powershell
+
     ``` powershell
     $code = Request-GDriveAuthorizationCode -ClientID $oauth_json.web.client_id `
       -ClientSecret $oauth_json.web.client_secret
     ```
+
     or manually
     - Browse to https://developers.google.com/oauthplayground
     - Click the gear in the right-hand corner and select “_Use your own OAuth credentials_"
@@ -42,11 +51,13 @@ Google Drive is a free service for file storage files. In order to use this stor
 11. Get refresh Token
 
     by powershell
+
     ``` powershell 
     $refresh = Request-GDriveRefreshToken -ClientID $oauth_json.web.client_id `
       -ClientSecret $oauth_json.web.client_secret `
       -AuthorizationCode $code
     ```
+
     manually - you already have it if you do **10.5** + **10.6**
 
 12. `Authentication Token` - mandatory parameter for almost every `GDrive` cmdlets, and it need to be refreshed every hour, so you should get it (and can refresh it) at the beginning of your actual work with google drive
@@ -56,7 +67,9 @@ Google Drive is a free service for file storage files. In order to use this stor
       -ClientSecret $oauth_json.web.client_secret `
       -RefreshToken $refresh.refresh_token
     ```
+
 ### Usage
+
 ``` powershell
 # Upload new file
 Add-GDriveItem -AccessToken $access.access_token -InFile D:\SomeDocument.doc -Name SomeDocument.doc
@@ -70,11 +83,13 @@ Get-GDriveItemProperty -AccessToken $access.access_token -ID $file.id -Property 
 ```
 
 ### Error Handling
+
 Error handling left for self-production :)
 
 Cmdlets exiting at the first error, but, for example if Metadata Upload succeded but content upload failed, _UploadID_ as **ResumeID** returned for resume operations later
 
 If Error catched, error record can be decoded by Get-GDriveError
+
 ``` powershell
  # save error to variable
  try { Get-GDriveItemProperty -AccessToken 'error token' -id 'error id' } catch { $err = $_ }
@@ -87,6 +102,7 @@ If Error catched, error record can be decoded by Get-GDriveError
 For automatic usage (for example from task scheduler) you must save your credentials secure way.
 
 For this task you can use these functions (if you do not need something even more secure):
+
 ``` powershell
 function Protect-String {
 <#
@@ -138,8 +154,10 @@ PROCESS {
 }
 }
 ```
+
 First you manually launch powershell on machine that will run you script and under needed user.
 Then you construct your GDrive credentials object and save it securely:
+
 ``` powershell
 [PSCustomObject]@{
   ClientID = 'clientid'
@@ -149,6 +167,7 @@ Then you construct your GDrive credentials object and save it securely:
 ```
 
 And in your automatic script you get saved data, decode it and use:
+
 ``` powershell
 $Credentials = Get-Content -Path C:\path\somefile | Unprotect-String | ConvertFrom-JSon
 
@@ -166,4 +185,32 @@ if ($Token) {
   $Summary = Get-GDriveSummary -AccessToken $Token.access_token -ErrorAction Stop
   # [...]
 }
+```
+
+### Using a service account
+
+Using a service account allows you to upload data to folders that are shared with the service account.
+
+In Google Workspace enterprise environments, it is also possible to grant impersonation rights to the service account. With these rights, the service account can act as a user (without OAuth consent screen).
+
+Please check the Google documentation:
+
+- [Create a service account](https://developers.google.com/workspace/guides/create-credentials#create_a_service_account)
+- [Assign impersonation rights (domain-wide delegation)](https://developers.google.com/workspace/guides/create-credentials#optional_set_up_domain-wide_delegation_for_a_service_account)
+
+Google offers two types of service user files .json and .p12. Both types are implemented in this module.
+
+``` PowerShell
+Get-GDriveAccessToken `
+  -Path D:\service_account.json -JsonServiceAccount `
+  -ImpersonationUser "user@domain.com"
+```
+
+``` PowerShell
+$keyData = Get-Content -AsByteStream -Path D:\service_account.p12
+Get-GDriveAccessToken `
+  -KeyData $KeyData `
+  -KeyId 'd41d8cd98f0b24e980998ecf8427e' `
+  -ServiceAccountMail test-account@980998ecf8427e.iam.gserviceaccount.com `
+  -ImpersonationUser "user@domain.com"
 ```

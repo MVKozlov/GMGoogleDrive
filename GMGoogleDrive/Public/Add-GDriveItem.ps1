@@ -17,6 +17,8 @@
     Folder ID in which new item will be placed
 .PARAMETER JsonProperty
     Json-formatted string with all needed file metadata
+.PARAMETER UseMetadataFromFile
+    Uses the metadata of the file provided in InFile
 .PARAMETER Property
     List of properties that will be retured once upload is completed
 .PARAMETER ContentType
@@ -25,8 +27,6 @@
     Upload request size
 .PARAMETER ShowProgress
     Show progress bar while uploading
-.PARAMETER UseMetadataFromFile
-    Uses the metadata of the file provided in InFile
 .PARAMETER KeepRevisionForever
     Set the flag that this revision of the file will be kept forever.
 .PARAMETER AccessToken
@@ -89,6 +89,9 @@ function Add-GDriveItem {
         [Alias('Metadata')]
         [string]$JsonProperty = '',
 
+        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
+        [switch]$UseMetadataFromFile,
+
         [ValidateSet("*",'kind','id','name','mimeType',
         'description','starred','trashed','explicitlyTrashed','parents','properties','appProperties','spaces','version',
         'webContentLink','webViewLink','iconLink','thumbnailLink','viewedByMe','viewedByMeTime','createdTime','modifiedTime',
@@ -109,9 +112,6 @@ function Add-GDriveItem {
         [int]$ChunkSize = 4Mb,
 
         [switch]$ShowProgress,
-
-        [Parameter(Mandatory, ParameterSetName='fileAutomaticMeta')]
-        [switch]$UseMetadataFromFile,
 
         [switch]$KeepRevisionForever,
 
