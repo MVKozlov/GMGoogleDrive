@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-    
+    Clear data from Google Sheet
 .DESCRIPTION
-    
+    Clear data from Google Sheet
 .PARAMETER AccessToken
     Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .EXAMPLE
-
+    Clear-GSheetsValues -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:15"
 .OUTPUTS
     
 .NOTES

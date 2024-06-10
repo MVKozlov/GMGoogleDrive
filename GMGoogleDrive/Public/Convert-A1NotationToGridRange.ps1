@@ -18,32 +18,29 @@
 .LINK
 
 #>
-function Get-GSheetsValues {
+function Convert-A1NotationToGridRange {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
         [string]$AccessToken,
 
-        [Parameter(Mandatory)]
         [ValidatePattern('([a-zA-Z0-9-_]+)')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]
         [string]$A1Notation
-        
     )
 
-    $Headers = @{
-        "Authorization" = "Bearer $AccessToken"
-    }
-    $requestParams = @{
-        Uri = $GDriveSheetsUri + "/" + $SpreadsheetId + "/values/" + $A1Notation
-        Headers = $Headers
-        ContentType = "application/json; charset=utf-8"
+    $A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7}):(?<endcolumn>[A-Za-z]{0,3})(?<endrow>\d{0,7})$'
+
+    $return = @{
+        sheetId = $Matches.sheet
+        startRowIndex = $Matches.startrow
+        endRowIndex = $Matches.endrow
+        startColumnIndex = $Matches.startcolumn
+        endColumnIndex = $Matches.endcolumn
     }
 
-    Write-Verbose "Webrequest URI: $($requestParams.Uri)"
-    Invoke-RestMethod @requestParams -Method GET @GDriveProxySettings
+    $return
     
 }
     
