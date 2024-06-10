@@ -32,31 +32,20 @@ function Export-GSheets {
 
         [switch]$Append
     )
-
-        $Headers = @{
-            "Authorization" = "Bearer $AccessToken"
-        }
-        $requestParams = @{
-            Uri = $GDriveSheetsUri + "/" + $SpreadsheetId + "/values/" + $SheetName + "!1:1"
-            Headers = $Headers
-            ContentType = "application/json; charset=utf-8"
-        }
         
-        $ColumnsInputObject = ($InputObject | Get-Member -MemberType NoteProperty).Name
+        $ColumnsInputObject = ($InputObject | Get-Member -MemberType NoteProperty,Property).Name
         $Columns = $ColumnsInputObject
         
         if($Append) {
-            Write-Verbose "Webrequest read first row:  $($requestParams | Convertto-Json -Depth 5)"
-            $FirstRow = Invoke-RestMethod @requestParams -Method GET @GDriveProxySettings
+            $FirstRow = Get-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation ($SheetName + "!1:1")
         }
 
         if(-not $FirstRow.values -or -not $Append) {
 
             #Clear the SpreadSheet
-            $requestParams["Uri"] = $GDriveSheetsUri + "/" + $SpreadsheetId + "/values/" + $SheetName + ":clear"
-            Write-Verbose "Webrequest clear:  $($requestParams | Convertto-Json -Depth 5)"
+            
             try {
-                Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+                Clear-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation $SheetName
             } Catch {
                  
                 if( (($_.ErrorDetails.Message | ConvertFrom-Json).error.message) -like "Unable to parse range*" ) {
@@ -65,14 +54,7 @@ function Export-GSheets {
             }
 
             # Adding Header Row
-            $requestParams["Body"] = @{
-                values = (,@( $ColumnsInputObject ))
-            } | ConvertTo-Json -Compress
-            
-            $requestParams["Uri"] = $GDriveSheetsUri + "/" + $SpreadsheetId + "/values/" + $SheetName + "!1:1?valueInputOption=RAW"
-
-            Write-Verbose "Webrequest header row: $($requestParams | Convertto-Json -Depth 5)"
-            Invoke-RestMethod @requestParams -Method PUT @GDriveProxySettings
+            Set-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!1:1" -Values (,@( $ColumnsInputObject ))
 
         } else {
             $Columns = $FirstRow.values[0]
@@ -90,17 +72,7 @@ function Export-GSheets {
             $values += @(,$row)
         }
 
-        $requestParams = @{
-            Uri = $GDriveSheetsUri + "/" + $SpreadsheetId + "/values/" + $SheetName + "!A2:B:append?valueInputOption=RAW"
-            Headers = $Headers
-            ContentType = "application/json; charset=utf-8"
-            Body = @{
-                values = $values
-            } | ConvertTo-Json -Compress
-        }
-
-        Write-Verbose "Webrequest: $($requestParams | Convertto-Json -Depth 5)"
-        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+        Set-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!A2:B" -Values $values -Append
         
     }
     
