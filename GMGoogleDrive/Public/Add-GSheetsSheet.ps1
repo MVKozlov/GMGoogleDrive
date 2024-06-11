@@ -18,7 +18,7 @@
 .EXAMPLE
     New-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetName "Test1"
 .OUTPUTS
-    
+
 .NOTES
     Author: Jan Elhaus
 .LINK
@@ -83,6 +83,5 @@ function New-GSheetsSheet {
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 7)"
     Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
-    
+
 }
-    

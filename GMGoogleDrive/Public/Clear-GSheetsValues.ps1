@@ -10,7 +10,7 @@
 .EXAMPLE
     Clear-GSheetsValues -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:15"
 .OUTPUTS
-    
+
 .NOTES
     Author: Jan Elhaus
 .LINK
@@ -41,6 +41,5 @@ function Clear-GSheetsValues {
 
     Write-Verbose "Webrequest: $($requestParams | ConvertTo-Json -Depth 2)"
     Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
-    
+
 }
-    

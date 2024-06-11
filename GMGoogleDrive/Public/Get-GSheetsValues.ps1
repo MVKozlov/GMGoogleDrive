@@ -12,7 +12,7 @@
 .EXAMPLE
     Get-GSheetsValues -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:15"
 .OUTPUTS
-    
+
 .NOTES
     Author: Jan Elhaus
 .LINK
@@ -30,7 +30,6 @@ function Get-GSheetsValues {
 
         [Parameter(Mandatory)]
         [string]$A1Notation
-        
     )
 
     $Headers = @{
@@ -44,6 +43,5 @@ function Get-GSheetsValues {
 
     Write-Verbose "Webrequest URI: $($requestParams.Uri)"
     Invoke-RestMethod @requestParams -Method GET @GDriveProxySettings
-    
+
 }
-    

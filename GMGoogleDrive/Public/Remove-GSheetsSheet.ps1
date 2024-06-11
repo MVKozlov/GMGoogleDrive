@@ -15,7 +15,7 @@
     Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetId "2045344383"
     Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetName "Sheet1"
 .OUTPUTS
-    
+
 .NOTES
     Author: Jan Elhaus
 .LINK
@@ -66,6 +66,5 @@ function Remove-GSheetsSheet {
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 3)"
     Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
-    
+
 }
-    

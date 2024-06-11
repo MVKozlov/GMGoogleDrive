@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
-    
+
 .DESCRIPTION
-    
+
 .PARAMETER Name
-    
+
 .EXAMPLE
 
 .OUTPUTS
@@ -37,6 +37,5 @@ function Get-GSheetsSpreadsheet {
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 2)"
     Invoke-RestMethod @requestParams -Method GET @GDriveProxySettings
-    
+
 }
-    

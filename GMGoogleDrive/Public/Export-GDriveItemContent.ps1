@@ -13,7 +13,7 @@
     Return content as raw byte[] array
 .PARAMETER Encoding
     Set output encoding if content will be returned as string.
-    By default used GoodleDrive supplied encoding 
+    By default used GoodleDrive supplied encoding
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE

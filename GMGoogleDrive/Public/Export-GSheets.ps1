@@ -18,11 +18,11 @@
     $data | Export-GSheets -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetName "Test" -Append
     Get-ChildItem "C:\" | Export-GSheets -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetName "Test"
 .OUTPUTS
-    
+
 .NOTES
     Author: Jan Elhaus
 .LINK
-    
+
 #>
 function Export-GSheets {
     [CmdletBinding()]
@@ -45,20 +45,20 @@ function Export-GSheets {
 
         [switch]$Append
     )
-        
+
     begin {
-        
+
         $FirstRun = $true
         $Columns = @()
         $Values  = @()
-        
+
         if($Append) {
             $FirstRow = Get-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation ($SheetName + "!1:1")
             if($FirstRow.values) {
                 $Columns = $FirstRow.values[0]
             }
         }
-        
+
     }
 
     process {
@@ -71,19 +71,19 @@ function Export-GSheets {
             if(-not $FirstRow.values -or -not $Append) {
 
                 #Clear the SpreadSheet
-                
+
                 try {
                     Clear-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation $SheetName
                 } Catch {
-                     
+
                     if( (($_.ErrorDetails.Message | ConvertFrom-Json).error.message) -like "Unable to parse range*" ) {
                         New-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName $SheetName
                     }
                 }
-    
+
                 # Adding Header Row
                 Set-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!1:1" -Values (,@( $ColumnsInputObject ))
-    
+
             }
 
             $FirstRun = $false
@@ -103,7 +103,7 @@ function Export-GSheets {
             Set-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!A2:B" -Values $Values -Append
             $Values = @()
         }
-        
+
     }
 
     End {
@@ -113,4 +113,3 @@ function Export-GSheets {
     }
 
 }
-    

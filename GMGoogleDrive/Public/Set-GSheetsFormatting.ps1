@@ -8,9 +8,9 @@
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .EXAMPLE
-    
+
 .OUTPUTS
-    
+
 .NOTES
     Author: Jan Elhaus
 .LINK
@@ -55,7 +55,7 @@ function Set-GSheetsFormatting {
         [ValidateSet("OVERFLOW_CELL","LEGACY_WRAP","CLIP","WRAP")]
         [string]$WrapStrategy
     )
-    
+
     $cell = @{}
     $cell["userEnteredFormat"] = @{}
     $cell["userEnteredFormat"]["textFormat"] = @{}
@@ -144,6 +144,5 @@ function Set-GSheetsFormatting {
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 7)"
     Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
-    
+
 }
-    

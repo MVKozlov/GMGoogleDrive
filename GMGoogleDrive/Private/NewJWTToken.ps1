@@ -12,9 +12,9 @@ function NewJWTToken {
     param(
         [Parameter(Mandatory)]
         [string]$Issuer,
-        
+
         [string]$KeyId,
-        
+
         [string]$ImpersonationUser,
 
         [Parameter(Mandatory)]

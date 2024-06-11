@@ -18,7 +18,7 @@
 .EXAMPLE
     Set-GSheetsValues -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!D3:G5" -Values @(,@("Test1", "Test2"))
 .OUTPUTS
-    
+
 .NOTES
     Author: Jan Elhaus
 .LINK
@@ -37,7 +37,7 @@ function Set-GSheetsValues {
 
         [Parameter(Mandatory)]
         [string]$A1Notation,
-        
+
         [Parameter(Mandatory)]
         [array[]]$Values,
 
@@ -72,6 +72,5 @@ function Set-GSheetsValues {
     Write-Verbose "Webrequest Body: $($requestParams.Body)"
 
     Invoke-RestMethod @requestParams @GDriveProxySettings
-    
+
 }
-    
