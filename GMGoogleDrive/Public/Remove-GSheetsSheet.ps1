@@ -39,7 +39,7 @@ function Remove-GSheetsSheet {
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'SheetName') {
-        $SpreadsheetMeta = Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId "1M2JexuFcZyaVsQp4QuHv8KD0mMXPhkoPtoe2A9YESi0"
+        $SpreadsheetMeta = Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
         $SheetId = ($SpreadsheetMeta.sheets.properties | Where-Object {$_.title -eq $SheetName}).sheetId
         if(-not $SheetId) {
             throw "SheetName not found"
