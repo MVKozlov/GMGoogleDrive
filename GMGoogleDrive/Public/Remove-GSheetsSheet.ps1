@@ -22,7 +22,7 @@
     https://developers.google.com/sheets/api/samples/sheet
 #>
 function Remove-GSheetsSheet {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
         [string]$AccessToken,
@@ -65,6 +65,9 @@ function Remove-GSheetsSheet {
     }
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 3)"
-    Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+
+    if($PSCmdlet.ShouldProcess("SheetId $SheetId")){
+        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+    }
 
 }

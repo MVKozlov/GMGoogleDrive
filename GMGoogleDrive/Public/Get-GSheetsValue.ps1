@@ -10,7 +10,7 @@
 .PARAMETER A1Notation
     A1Notation of the data range that should be read
 .EXAMPLE
-    Get-GSheetsValues -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:15"
+    Get-GSheetsValue -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:15"
 .OUTPUTS
 
 .NOTES
@@ -18,7 +18,7 @@
 .LINK
 
 #>
-function Get-GSheetsValues {
+function Get-GSheetsValue {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

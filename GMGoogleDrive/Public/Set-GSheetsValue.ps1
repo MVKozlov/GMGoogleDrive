@@ -12,11 +12,11 @@
 .PARAMETER Values
     2D array of values that should be written to the sheet
 .PARAMETER ValueInputOption
-    
+
 .PARAMETER Append
     Use this parameter so that the data is added to the end of the specified range
 .EXAMPLE
-    Set-GSheetsValues -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!D3:G5" -Values @(,@("Test1", "Test2"))
+    Set-GSheetsValue -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!D3:G5" -Values @(,@("Test1", "Test2"))
 .OUTPUTS
 
 .NOTES
@@ -25,7 +25,7 @@
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/update
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append
 #>
-function Set-GSheetsValues {
+function Set-GSheetsValue {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

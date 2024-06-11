@@ -53,7 +53,7 @@ function Export-GSheets {
         $Values  = @()
 
         if($Append) {
-            $FirstRow = Get-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation ($SheetName + "!1:1")
+            $FirstRow = Get-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation ($SheetName + "!1:1")
             if($FirstRow.values) {
                 $Columns = $FirstRow.values[0]
             }
@@ -73,7 +73,7 @@ function Export-GSheets {
                 #Clear the SpreadSheet
 
                 try {
-                    Clear-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation $SheetName
+                    Clear-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation $SheetName
                 } Catch {
 
                     if( (($_.ErrorDetails.Message | ConvertFrom-Json).error.message) -like "Unable to parse range*" ) {
@@ -82,7 +82,7 @@ function Export-GSheets {
                 }
 
                 # Adding Header Row
-                Set-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!1:1" -Values (,@( $ColumnsInputObject ))
+                Set-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!1:1" -Values (,@( $ColumnsInputObject ))
 
             }
 
@@ -100,7 +100,7 @@ function Export-GSheets {
         }
 
         if($Values.Count -ge $TransferLines) {
-            Set-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!A2:B" -Values $Values -Append
+            Set-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!A2:B" -Values $Values -Append
             $Values = @()
         }
 
@@ -108,7 +108,7 @@ function Export-GSheets {
 
     End {
         if($Values) {
-            Set-GSheetsValues -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!A2:B" -Values $Values -Append
+            Set-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!A2:B" -Values $Values -Append
         }
     }
 

@@ -8,7 +8,7 @@
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .EXAMPLE
-    Clear-GSheetsValues -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:15"
+    Clear-GSheetsValue -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:15"
 .OUTPUTS
 
 .NOTES
@@ -16,7 +16,7 @@
 .LINK
     https://developers.google.com/sheets/api/samples/sheet
 #>
-function Clear-GSheetsValues {
+function Clear-GSheetsValue {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

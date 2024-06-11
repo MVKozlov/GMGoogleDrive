@@ -25,7 +25,7 @@
     https://developers.google.com/sheets/api/samples/sheet
 #>
 function New-GSheetsSheet {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
         [string]$AccessToken,
@@ -82,6 +82,9 @@ function New-GSheetsSheet {
     }
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 7)"
-    Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+
+    if($PSCmdlet.ShouldProcess("SheetName $SheetName")){
+        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+    }
 
 }
