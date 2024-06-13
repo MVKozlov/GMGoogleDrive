@@ -35,7 +35,7 @@ function Get-GSheetsSpreadsheet {
     }
 
 
-    Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 2)"
+    Write-Verbose "Webrequest uri:  $($requestParams.Uri)"
     Invoke-RestMethod @requestParams -Method GET @GDriveProxySettings
 
 }

@@ -32,43 +32,47 @@ function Convert-A1NotationToGridRange {
         [string]$A1Notation
     )
 
-    $A1Notation = "Test!A:A"
     if($A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7})$') {
         $A1Notation = $A1Notation + ":" + $Matches.startcolumn + $Matches.startrow
     }
 
     if($A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7}):(?<endcolumn>[A-Za-z]{0,3})(?<endrow>\d{0,7})$') {
 
-        $Alphabet = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-        $StartColumn = 0
-        for ($i = 0; $i -lt $Matches.startcolumn.Length; $i++) {
-            $StartColumn += $Alphabet.IndexOf($Matches.startcolumn.Substring($i,1).toUpper()) * [math]::pow(26, $i)
-        }
-        $StartColumn -= 1
-
-        $EndColumn = 0
-        for ($i = 0; $i -lt $Matches.endcolumn.Length; $i++) {
-            $EndColumn += $Alphabet.IndexOf($Matches.endcolumn.Substring($i,1).toUpper()) * [math]::pow(26, $i)
-        }
-        $EndColumn -= 1
+        Write-Verbose "Matches Regex: $($Matches)"
+        $Return = @{}
 
         $SheetName = $Matches.sheet.Substring(0,$Matches.sheet.Length-1)
         $SpreadsheetMeta = Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
-        $SheetId = ($SpreadsheetMeta.sheets.properties | Where-Object {$_.title -eq $SheetName}).sheetId
-        if(-not $SheetId) {
+        $Return["sheetId"] = ($SpreadsheetMeta.sheets.properties | Where-Object {$_.title -eq $SheetName}).sheetId
+        if(-not $Return["sheetId"]) {
             throw "SheetName not found"
         }
+        
+        if($Matches.startcolumn) {
 
-        $return = @{
-            sheetId = $SheetId
-            startRowIndex = $Matches.startrow -1
-            endRowIndex = $Matches.endrow -1
-            startColumnIndex = $StartColumn
-            endColumnIndex = $EndColumn
+            $Alphabet = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+            [int]$Return["startColumnIndex"] = 0
+            for ($i = 0; $i -lt $Matches.startcolumn.Length; $i++) {
+                [int]$Return["startColumnIndex"] += $Alphabet.IndexOf($Matches.startcolumn.Substring($i,1).toUpper()) * [math]::pow(26, $i)
+            }
+            [int]$Return["startColumnIndex"] -= 1
+
+            [int]$Return["endColumnIndex"] = 0
+            for ($i = 0; $i -lt $Matches.endcolumn.Length; $i++) {
+                [int]$Return["endColumnIndex"] += $Alphabet.IndexOf($Matches.endcolumn.Substring($i,1).toUpper()) * [math]::pow(26, $i)
+            }
+
         }
 
-        $return
+        if($Matches.startrow) {
+            [int]$Return["startRowIndex"] = $Matches.startrow -1
+            [int]$Return["endRowIndex"] = $Matches.endrow
+        }
+
+        Write-Verbose "GridRange: $($Return | ConvertTo-Json -Compress)"
+
+        $Return
 
     } else {
         throw "does not match A1Notation format"

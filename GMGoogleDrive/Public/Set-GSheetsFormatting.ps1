@@ -27,7 +27,8 @@ function Set-GSheetsFormatting {
         [ValidatePattern('([a-zA-Z0-9-_]+)')]
         [string]$SpreadsheetId,
 
-        [string]$SheetName,
+        [Parameter(Mandatory)]
+        [string]$A1Notation,
 
         [ValidatePattern('([A-F0-9]{6})')]
         [string]$BackgroudColorHex,
@@ -55,6 +56,8 @@ function Set-GSheetsFormatting {
         [ValidateSet("OVERFLOW_CELL","LEGACY_WRAP","CLIP","WRAP")]
         [string]$WrapStrategy
     )
+
+    $GridRange = Convert-A1NotationToGridRange -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation $A1Notation
 
     $cell = @{}
     $cell["userEnteredFormat"] = @{}
@@ -129,11 +132,7 @@ function Set-GSheetsFormatting {
             requests = @(
                 @{
                     repeatCell = @{
-                        range = @{
-                            sheetId = 313675250
-                            startRowIndex = 1
-                            endRowIndex = 2
-                        }
+                        range = $GridRange
                         cell = $cell
                         fields = ($fields -join ",")
                     }
@@ -142,7 +141,7 @@ function Set-GSheetsFormatting {
         } | ConvertTo-Json -Depth 10 -Compress
     }
 
-    Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 7)"
+    Write-Verbose "Webrequest body: $($requestParams.Body)"
     Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
 
 }
