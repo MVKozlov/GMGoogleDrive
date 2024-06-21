@@ -8,7 +8,8 @@
 #   -Scope 'https://www.googleapis.com/auth/drive'
 
 function NewJWTToken {
-[CmdletBinding()]
+    [CmdletBinding()]
+    [OutputType([String])]
     param(
         [Parameter(Mandatory)]
         [string]$Issuer,

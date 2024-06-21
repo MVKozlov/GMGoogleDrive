@@ -26,7 +26,7 @@
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append
 #>
 function Set-GSheetsValue {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
         [string]$AccessToken,
@@ -71,6 +71,8 @@ function Set-GSheetsValue {
     Write-Verbose "Webrequest Uri: $($requestParams.Uri)"
     Write-Verbose "Webrequest Body: $($requestParams.Body)"
 
-    Invoke-RestMethod @requestParams @GDriveProxySettings
+    if($PSCmdlet.ShouldProcess("A1Notation $A1Notation")) {
+        Invoke-RestMethod @requestParams @GDriveProxySettings
+    }
 
 }

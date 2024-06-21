@@ -20,6 +20,7 @@
 #>
 function Convert-A1NotationToGridRange {
     [CmdletBinding()]
+    [OutputType([String])]
     param(
         [Parameter(Mandatory)]
         [string]$AccessToken,
@@ -47,7 +48,7 @@ function Convert-A1NotationToGridRange {
         if(-not $Return["sheetId"]) {
             throw "SheetName not found"
         }
-        
+
         if($Matches.startcolumn) {
 
             $Alphabet = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"

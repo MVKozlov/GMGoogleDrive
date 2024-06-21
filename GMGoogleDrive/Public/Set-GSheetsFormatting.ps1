@@ -18,7 +18,7 @@
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/cells
 #>
 function Set-GSheetsFormatting {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
         [string]$AccessToken,
@@ -142,6 +142,9 @@ function Set-GSheetsFormatting {
     }
 
     Write-Verbose "Webrequest body: $($requestParams.Body)"
-    Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+
+    if($PSCmdlet.ShouldProcess("A1Notation $A1Notation")) {
+        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+    }
 
 }
