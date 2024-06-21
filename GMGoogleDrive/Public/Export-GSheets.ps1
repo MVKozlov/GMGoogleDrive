@@ -73,16 +73,17 @@ function Export-GSheets {
                 #Clear the SpreadSheet
 
                 try {
-                    Clear-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation $SheetName
+                    Clear-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation $SheetName | Out-Null
                 } Catch {
 
                     if( (($_.ErrorDetails.Message | ConvertFrom-Json).error.message) -like "Unable to parse range*" ) {
-                        New-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName $SheetName
+                        New-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName $SheetName -RowCount 2 -ColumnCount 1 | Out-Null
                     }
                 }
 
                 # Adding Header Row
-                Set-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!1:1" -Values (,@( $ColumnsInputObject ))
+                Set-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!1:1" -Values (,@( $ColumnsInputObject )) | Out-Null
+                Set-GSheetsFormatting -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "$SheetName!1:1" -Bold $true | Out-Null
 
             }
 

@@ -39,7 +39,6 @@ function Convert-A1NotationToGridRange {
 
     if($A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7}):(?<endcolumn>[A-Za-z]{0,3})(?<endrow>\d{0,7})$') {
 
-        Write-Verbose "Matches Regex: $($Matches)"
         $Return = @{}
 
         $SheetName = $Matches.sheet.Substring(0,$Matches.sheet.Length-1)
