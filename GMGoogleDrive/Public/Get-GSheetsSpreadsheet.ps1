@@ -1,14 +1,16 @@
 <#
 .SYNOPSIS
-
+    Get information about the Google Sheets file
 .DESCRIPTION
-
-.PARAMETER Name
-
+    Get information about the Google Sheets file
+.PARAMETER AccessToken
+    Access Token for request
+.PARAMETER SpreadsheetId
+    SpreadsheetId file id
 .EXAMPLE
-
+    Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0"
 .OUTPUTS
-    Json with item metadata as PSObject
+
 .NOTES
     Author: Jan Elhaus
 .LINK

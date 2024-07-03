@@ -7,8 +7,31 @@
     Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
+.PARAMETER A1Notation
+    A1Notation of the area to modify
+.PARAMETER BackgroudColorHex
+    HexCode of the cell background color
+.PARAMETER FontColorHex
+    HexCode of the font color
+.PARAMETER FontSize
+    Specify the font size
+.PARAMETER Bold
+    specify whether the font should be bold
+.PARAMETER Italic
+    specify whether the font should be italic
+.PARAMETER Strikethrough
+    specify whether the font should be strikethrough
+.PARAMETER Underline
+    specify whether the font should be underlined
+.PARAMETER HorizontalAlignment,
+    specify the horizontal alignment of the cell
+.PARAMETER VerticalAlignment,
+    specify the vertical alignment of the cell
+.PARAMETER WrapStrategy
+    specify the text wrap strategy alignment of the cell
 .EXAMPLE
-
+    Set-GSheetsFormatting -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:1" -FontSize 10 -Strikethrough $false -BackgroudColorHex 623f56
+    Set-GSheetsFormatting -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:1" -Bold $true -FontColorHex 623f56
 .OUTPUTS
 
 .NOTES
