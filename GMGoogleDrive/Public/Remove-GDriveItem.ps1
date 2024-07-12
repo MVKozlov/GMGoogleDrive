@@ -64,6 +64,7 @@ param(
     }
     else {
         if ($PSCmdlet.ShouldProcess($ID, "Move Item to trash")) {
+            [void]$PSBoundParameters.Remove('Permanently')
             Set-GDriveItemProperty @PSBoundParameters -JsonProperty '{ "trashed": "true" }'
         }
     }

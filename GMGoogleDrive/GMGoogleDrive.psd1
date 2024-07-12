@@ -122,8 +122,11 @@ FunctionsToExport = @(
     'Get-GDriveProxySetting',
     'Set-GDriveProxySetting',
 
-    'Add-GSheetsSheet',
+    'New-GSheetsSpreadSheet',
+    'New-GSheetsSheet',
+    'Remove-GSheetsSpreadSheet',
     'Remove-GSheetsSheet',
+    'Copy-GSheetsSheet',
     'Clear-GSheetsValue',
     'Get-GSheetsValue',
     'Set-GSheetsValue',

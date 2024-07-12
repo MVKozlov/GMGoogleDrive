@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    Remove a Sheet from an exsting GoogleSheet
+    Remove a Sheet from an existing GoogleSheet
 .DESCRIPTION
-    Remove a Sheet from an exsting GoogleSheet
+    Remove a Sheet from an existing GoogleSheet
 .PARAMETER AccessToken
     Access Token for request
 .PARAMETER SpreadsheetId
@@ -13,6 +13,7 @@
     name of the sheet to be deleted
 .EXAMPLE
     Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetId "2045344383"
+.EXAMPLE
     Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetName "Sheet1"
 .OUTPUTS
 
@@ -20,9 +21,10 @@
     Author: Jan Elhaus
 .LINK
     https://developers.google.com/sheets/api/samples/sheet
+    https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/batchUpdate
 #>
 function Remove-GSheetsSheet {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding(SupportsShouldProcess, ConfirmImpact='High')]
     param(
         [Parameter(Mandatory)]
         [string]$AccessToken,
@@ -41,7 +43,7 @@ function Remove-GSheetsSheet {
     if ($PSCmdlet.ParameterSetName -eq 'SheetName') {
         $SpreadsheetMeta = Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
         $SheetId = ($SpreadsheetMeta.sheets.properties | Where-Object {$_.title -eq $SheetName}).sheetId
-        if(-not $SheetId) {
+        if($null -eq $SheetId) {
             throw "SheetName not found"
         }
     }

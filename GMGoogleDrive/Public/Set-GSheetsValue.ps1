@@ -50,7 +50,6 @@ function Set-GSheetsValue {
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
     }
-
     $requestParams = @{
         Uri = $GDriveSheetsUri + "/" + $SpreadsheetId + "/values/" + $A1Notation + "?valueInputOption=" + $ValueInputOption
         Headers = $Headers

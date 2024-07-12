@@ -1,6 +1,7 @@
 # GMGoogleDrive
 
 Google Drive REST Api module for Powershell
+With Google Sheets API support
 
 ## Table of Contents
 
@@ -45,7 +46,10 @@ Google Drive is a free service for file storage files. In order to use this stor
     - Browse to https://developers.google.com/oauthplayground
     - Click the gear in the right-hand corner and select “_Use your own OAuth credentials_"
     - Fill in OAuth Client ID and OAuth Client secret
-    - Authorize the https://www.googleapis.com/auth/drive API
+    - Authorize the API scopes
+        - https://www.googleapis.com/auth/drive
+        - https://www.googleapis.com/auth/drive.file
+        - https://www.googleapis.com/auth/spreadsheets
     - Save `Authorization Code` or directly **Exchange authorization code** for tokens
     - Save `Refresh token`, it can not be requested again without new Authorization code
 11. Get refresh Token

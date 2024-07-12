@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    Adds a new Sheet to an exsting GoogleSheet
+    Adds a new Sheet to an existing GoogleSheet
 .DESCRIPTION
-    Adds a new Sheet to an exsting GoogleSheet
+    Adds a new Sheet to an existing GoogleSheet
 .PARAMETER AccessToken
     Access Token for request
 .PARAMETER SpreadsheetId
