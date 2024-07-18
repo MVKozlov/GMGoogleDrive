@@ -3,8 +3,6 @@
     Adds a new Sheet to an existing GoogleSheet
 .DESCRIPTION
     Adds a new Sheet to an existing GoogleSheet
-.PARAMETER AccessToken
-    Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .PARAMETER SheetName
@@ -15,8 +13,10 @@
     number of initial columns of the new sheet
 .PARAMETER ColorHex
     number of of the new sheet (tab)
+.PARAMETER AccessToken
+    Access Token for request
 .EXAMPLE
-    New-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetName "Test1"
+    New-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName "Test1"
 .OUTPUTS
 
 .NOTES
@@ -28,23 +28,23 @@ function New-GSheetsSheet {
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
-        [string]$AccessToken,
-
-        [Parameter(Mandatory)]
-        [ValidatePattern('([a-zA-Z0-9-_]+)')]
+        [ValidatePattern('^[a-zA-Z0-9-_]+$')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]
         [string]$SheetName,
 
-        [ValidateRange("Positive")]
+        [ValidateRange(1, [int]::MaxValue)]
         [int]$RowCount = 100,
 
-        [ValidateRange("Positive")]
+        [ValidateRange(1, [int]::MaxValue)]
         [int]$ColumnCount = 26,
 
-        [ValidatePattern('([A-F0-9]{6})')]
-        [string]$ColorHex = "FFFFFF"
+        [ValidatePattern('^[A-F0-9]{6}$')]
+        [string]$ColorHex = "FFFFFF",
+
+        [Parameter(Mandatory)]
+        [string]$AccessToken
     )
 
     # Convert Hex to RGB
@@ -83,8 +83,7 @@ function New-GSheetsSheet {
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 7)"
 
-    if($PSCmdlet.ShouldProcess("SheetName $SheetName")){
+    if ($PSCmdlet.ShouldProcess("New Sheet $SheetName")){
         Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
     }
-
 }

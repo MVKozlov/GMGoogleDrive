@@ -3,18 +3,18 @@
     Copy an existing Sheet to another existing GoogleSheet file
 .DESCRIPTION
     Copy an existing Sheet from one GoogleSheet to another existing GoogleSheet file
-.PARAMETER AccessToken
-    Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .PARAMETER DestinationSpreadsheetId
     Destination SpreadsheetId file id
 .PARAMETER SheetName
     name of the sheet to be copied
+.PARAMETER AccessToken
+    Access Token for request
 .EXAMPLE
-    Copy-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" $DestinationSpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi1" -SheetName "Test1"
+    Copy-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -DestinationSpreadsheetId $DestinationSpreadsheetId -SheetName "Test1"
 .EXAMPLE
-    Copy-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" $DestinationSpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi1" -SheetId 1
+    Copy-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -DestinationSpreadsheetId $SpreadsheetId -SheetId 1
 .OUTPUTS
 
 .NOTES
@@ -26,21 +26,21 @@ function Copy-GSheetsSheet {
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
-        [string]$AccessToken,
-
-        [Parameter(Mandatory)]
-        [ValidatePattern('([a-zA-Z0-9-_]+)')]
+        [ValidatePattern('^[a-zA-Z0-9-_]+$')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]
-        [ValidatePattern('([a-zA-Z0-9-_]+)')]
+        [ValidatePattern('^[a-zA-Z0-9-_]+$')]
         [Alias('TargetSpreadsheetId')]
         [string]$DestinationSpreadsheetId,
 
         [Parameter(Mandatory, ParameterSetName='SheetId')]
         [int]$SheetId,
         [Parameter(Mandatory, ParameterSetName='SheetName')]
-        [string]$SheetName
+        [string]$SheetName,
+
+        [Parameter(Mandatory)]
+        [string]$AccessToken
     )
     if ($PSCmdlet.ParameterSetName -eq 'SheetName') {
         $SpreadsheetMeta = Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
@@ -49,7 +49,6 @@ function Copy-GSheetsSheet {
             throw "SheetName not found"
         }
         Write-Verbose "Found $SheetName as $SheetId"
-        $SheetId = $Id
     }
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
@@ -65,8 +64,7 @@ function Copy-GSheetsSheet {
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json)"
 
-    if($PSCmdlet.ShouldProcess("SheetName $SheetName")){
+    if ($PSCmdlet.ShouldProcess("Copy Sheet $SheetId")) {
         Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
     }
-
 }

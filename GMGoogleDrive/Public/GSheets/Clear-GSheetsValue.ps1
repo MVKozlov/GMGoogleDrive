@@ -3,12 +3,12 @@
     Clear data from Google Sheet
 .DESCRIPTION
     Clear data from Google Sheet
-.PARAMETER AccessToken
-    Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
+.PARAMETER AccessToken
+    Access Token for request
 .EXAMPLE
-    Clear-GSheetsValue -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:15"
+    Clear-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15"
 .OUTPUTS
 
 .NOTES
@@ -17,17 +17,17 @@
     https://developers.google.com/sheets/api/samples/sheet
 #>
 function Clear-GSheetsValue {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
-        [string]$AccessToken,
-
-        [Parameter(Mandatory)]
-        [ValidatePattern('([a-zA-Z0-9-_]+)')]
+        [ValidatePattern('^[a-zA-Z0-9-_]+$')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]
-        [string]$A1Notation
+        [string]$A1Notation,
+
+        [Parameter(Mandatory)]
+        [string]$AccessToken
     )
 
     $Headers = @{
@@ -40,6 +40,7 @@ function Clear-GSheetsValue {
     }
 
     Write-Verbose "Webrequest: $($requestParams | ConvertTo-Json -Depth 2)"
-    Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
-
+    if ($PSCmdlet.ShouldProcess("Clear $A1Notation")) {
+        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+    }
 }

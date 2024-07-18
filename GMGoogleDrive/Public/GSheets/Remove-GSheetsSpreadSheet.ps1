@@ -3,12 +3,14 @@
     Remove existing GoogleSheet file
 .DESCRIPTION
     Remove existing GoogleSheet file
-.PARAMETER AccessToken
-    Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
+.PARAMETER Permanently
+    Permanently remove item. If not set, item moved to trash
+.PARAMETER AccessToken
+    Access Token for request
 .EXAMPLE
-    Remove-GSheetsSpreadSheet -AccessToken $AccessToken
+    Remove-GSheetsSpreadSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
 .OUTPUTS
 
 .NOTES
@@ -20,11 +22,16 @@ function Remove-GSheetsSpreadSheet {
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact='High')]
     param(
         [Parameter(Mandatory)]
-        [string]$AccessToken,
-        [Parameter(Mandatory)]
-        [ValidatePattern('([a-zA-Z0-9-_]+)')]
+        [ValidatePattern('^[a-zA-Z0-9-_]+$')]
         [string]$SpreadsheetId,
-        [switch]$Permanently
+
+        [switch]$Permanently,
+
+        [Parameter(Mandatory)]
+        [string]$AccessToken
     )
-    Remove-GDriveItem -AccessToken $AccessToken -Id $SpreadsheetId -Permanently:$Permanently
+    $PSBoundParameters.ID = $PSBoundParameters.SpreadsheetId
+    $PSBoundParameters.Remove('SpreadsheetId')
+
+    Remove-GDriveItem @PSBoundParameters
 }

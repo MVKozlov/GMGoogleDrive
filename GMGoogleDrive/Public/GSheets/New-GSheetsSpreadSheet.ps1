@@ -3,8 +3,16 @@
     Adds a new GoogleSheet file
 .DESCRIPTION
     Adds a new GoogleSheet file with default properties
+.PARAMETER Name
+    Name of the GoogleSheet file to be added
+.PARAMETER SheetName
+    Name of the default Sheet in file to be added
 .PARAMETER AccessToken
     Access Token for request
+.EXAMPLE
+    New-GSheetsSpreadSheet -AccessToken $AccessToken -Name 'New table'
+.EXAMPLE
+    New-GSheetsSpreadSheet -AccessToken $AccessToken -Name 'New table' -SheetName 'sheet1'
 .EXAMPLE
     New-GSheetsSpreadSheet -AccessToken $AccessToken
 .OUTPUTS
@@ -15,8 +23,12 @@
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/create
 #>
 function New-GSheetsSpreadSheet {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
     param(
+        [string]$Name,
+
+        [string]$SheetName,
+
         [Parameter(Mandatory)]
         [string]$AccessToken
     )
@@ -27,12 +39,21 @@ function New-GSheetsSpreadSheet {
         Uri = $GDriveSheetsUri
         Headers = $Headers
         ContentType = "application/json; charset=utf-8"
-        Body = '{}'
+        Body = @{
+            properties = @{
+                title = $Name
+            }
+            sheets = @(
+                @{
+                    properties = @{
+                        title = $SheetName
+                    }
+                }
+            )
+        } | ConvertTo-Json -Depth 3 -Compress
     }
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json)"
 
-    if($PSCmdlet.ShouldProcess("New Spreadsheet")){
-        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
-    }
+    Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
 }

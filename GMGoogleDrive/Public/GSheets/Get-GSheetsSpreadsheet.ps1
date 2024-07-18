@@ -3,12 +3,12 @@
     Get information about the Google Sheets file
 .DESCRIPTION
     Get information about the Google Sheets file
-.PARAMETER AccessToken
-    Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
+.PARAMETER AccessToken
+    Access Token for request
 .EXAMPLE
-    Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0"
+    Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
 .OUTPUTS
 
 .NOTES
@@ -20,11 +20,11 @@ function Get-GSheetsSpreadsheet {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string]$AccessToken,
+        [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]
-        [ValidatePattern('([a-zA-Z0-9-_]+)')]
-        [string]$SpreadsheetId
+        [string]$AccessToken
     )
 
     $Headers = @{
@@ -36,8 +36,6 @@ function Get-GSheetsSpreadsheet {
         ContentType = "application/json; charset=utf-8"
     }
 
-
     Write-Verbose "Webrequest uri:  $($requestParams.Uri)"
     Invoke-RestMethod @requestParams -Method GET @GDriveProxySettings
-
 }

@@ -3,14 +3,14 @@
     Convert A1Notation to GridRange
 .DESCRIPTION
     Convert A1Notation to GridRange
-.PARAMETER AccessToken
-    Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .PARAMETER A1Notation
     A1Notation of the data range
+.PARAMETER AccessToken
+    Access Token for request
 .EXAMPLE
-    Convert-A1NotationToGridRange -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:15"
+    Convert-A1NotationToGridRange -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15"
 .OUTPUTS
 
 .NOTES
@@ -23,32 +23,32 @@ function Convert-A1NotationToGridRange {
     [OutputType([String])]
     param(
         [Parameter(Mandatory)]
-        [string]$AccessToken,
-
-        [Parameter(Mandatory)]
-        [ValidatePattern('([a-zA-Z0-9-_]+)')]
+        [ValidatePattern('^[a-zA-Z0-9-_]+$')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]
-        [string]$A1Notation
+        [string]$A1Notation,
+
+        [Parameter(Mandatory)]
+        [string]$AccessToken
     )
 
-    if($A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7})$') {
+    if ($A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7})$') {
         $A1Notation = $A1Notation + ":" + $Matches.startcolumn + $Matches.startrow
     }
 
-    if($A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7}):(?<endcolumn>[A-Za-z]{0,3})(?<endrow>\d{0,7})$') {
+    if ($A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7}):(?<endcolumn>[A-Za-z]{0,3})(?<endrow>\d{0,7})$') {
 
         $Return = @{}
 
         $SheetName = $Matches.sheet.Substring(0,$Matches.sheet.Length-1)
         $SpreadsheetMeta = Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
         $Return["sheetId"] = ($SpreadsheetMeta.sheets.properties | Where-Object {$_.title -eq $SheetName}).sheetId
-        if(-not $Return["sheetId"]) {
+        if (-not $Return["sheetId"]) {
             throw "SheetName not found"
         }
 
-        if($Matches.startcolumn) {
+        if ($Matches.startcolumn) {
 
             $Alphabet = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -65,7 +65,7 @@ function Convert-A1NotationToGridRange {
 
         }
 
-        if($Matches.startrow) {
+        if ($Matches.startrow) {
             [int]$Return["startRowIndex"] = $Matches.startrow -1
             [int]$Return["endRowIndex"] = $Matches.endrow
         }
@@ -77,5 +77,4 @@ function Convert-A1NotationToGridRange {
     } else {
         throw "does not match A1Notation format"
     }
-
 }

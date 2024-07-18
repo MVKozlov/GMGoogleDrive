@@ -3,18 +3,18 @@
     Remove a Sheet from an existing GoogleSheet
 .DESCRIPTION
     Remove a Sheet from an existing GoogleSheet
-.PARAMETER AccessToken
-    Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .PARAMETER SheetId
     Id of the sheet to be deleted (can be found in url)
 .PARAMETER SheetName
     name of the sheet to be deleted
+.PARAMETER AccessToken
+    Access Token for request
 .EXAMPLE
-    Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetId "2045344383"
+    Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetId "2045344383"
 .EXAMPLE
-    Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -SheetName "Sheet1"
+    Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName "Sheet1"
 .OUTPUTS
 
 .NOTES
@@ -27,17 +27,17 @@ function Remove-GSheetsSheet {
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact='High')]
     param(
         [Parameter(Mandatory)]
-        [string]$AccessToken,
-
-        [Parameter(Mandatory)]
-        [ValidatePattern('([a-zA-Z0-9-_]+)')]
+        [ValidatePattern('^[a-zA-Z0-9-_]+$')]
         [string]$SpreadsheetId,
 
         [Parameter(ParameterSetName='SheetId', Mandatory=$true)]
         [string]$SheetId,
 
         [Parameter(ParameterSetName='SheetName', Mandatory=$true)]
-        [string]$SheetName
+        [string]$SheetName,
+
+        [Parameter(Mandatory)]
+        [string]$AccessToken
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'SheetName') {
@@ -68,8 +68,7 @@ function Remove-GSheetsSheet {
 
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 3)"
 
-    if($PSCmdlet.ShouldProcess("SheetId $SheetId")){
+    if ($PSCmdlet.ShouldProcess("Remove Sheet $SheetId")){
         Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
     }
-
 }

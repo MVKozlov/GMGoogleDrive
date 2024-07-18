@@ -3,8 +3,6 @@
     Changing the format of cells in a GSheet
 .DESCRIPTION
     Changing the format of cells in a GSheet
-.PARAMETER AccessToken
-    Access Token for request
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .PARAMETER A1Notation
@@ -29,9 +27,12 @@
     specify the vertical alignment of the cell
 .PARAMETER WrapStrategy
     specify the text wrap strategy alignment of the cell
+.PARAMETER AccessToken
+    Access Token for request
 .EXAMPLE
-    Set-GSheetsFormatting -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:1" -FontSize 10 -Strikethrough $false -BackgroudColorHex 623f56
-    Set-GSheetsFormatting -AccessToken $AccessToken -SpreadsheetId "123456789Qp4QuHv8KD0mMXPhkoPtoe2A9YESi0" -A1Notation "Test!1:1" -Bold $true -FontColorHex 623f56
+    Set-GSheetsFormatting -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:1" -FontSize 10 -Strikethrough $false -BackgroudColorHex 623f56
+.EXAMPLE
+    Set-GSheetsFormatting -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:1" -Bold $true -FontColorHex 623f56
 .OUTPUTS
 
 .NOTES
@@ -44,22 +45,19 @@ function Set-GSheetsFormatting {
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]
-        [string]$AccessToken,
-
-        [Parameter(Mandatory)]
-        [ValidatePattern('([a-zA-Z0-9-_]+)')]
+        [ValidatePattern('^[a-zA-Z0-9-_]+$')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]
         [string]$A1Notation,
 
-        [ValidatePattern('([A-F0-9]{6})')]
+        [ValidatePattern('^[A-F0-9]{6}$')]
         [string]$BackgroudColorHex,
 
-        [ValidatePattern('([A-F0-9]{6})')]
+        [ValidatePattern('^[A-F0-9]{6}$')]
         [string]$FontColorHex,
 
-        [ValidateRange("Positive")]
+        [ValidateRange(1, [int]::MaxValue)]
         [int]$FontSize,
 
         [bool]$Bold,
@@ -77,7 +75,10 @@ function Set-GSheetsFormatting {
         [string]$VerticalAlignment,
 
         [ValidateSet("OVERFLOW_CELL","LEGACY_WRAP","CLIP","WRAP")]
-        [string]$WrapStrategy
+        [string]$WrapStrategy,
+
+        [Parameter(Mandatory)]
+        [string]$AccessToken
     )
 
     $GridRange = Convert-A1NotationToGridRange -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation $A1Notation
@@ -87,7 +88,7 @@ function Set-GSheetsFormatting {
     $cell["userEnteredFormat"]["textFormat"] = @{}
     $fields = @()
 
-    if($PSBoundParameters.ContainsKey('BackgroudColorHex')) {
+    if ($PSBoundParameters.ContainsKey('BackgroudColorHex')) {
         $cell["userEnteredFormat"]["backgroundColor"] = @{
             red =   [convert]::ToInt32($BackgroudColorHex.SubString(0,2), 16)
             green = [convert]::ToInt32($BackgroudColorHex.SubString(2,2), 16)
@@ -96,7 +97,7 @@ function Set-GSheetsFormatting {
         $fields += "userEnteredFormat.backgroundColor"
     }
 
-    if($PSBoundParameters.ContainsKey('FontColorHex')) {
+    if ($PSBoundParameters.ContainsKey('FontColorHex')) {
         $cell["userEnteredFormat"]["textFormat"]["foregroundColor"] = @{
             red =   [convert]::ToInt32($FontColorHex.SubString(0,2), 16)
             green = [convert]::ToInt32($FontColorHex.SubString(2,2), 16)
@@ -105,41 +106,41 @@ function Set-GSheetsFormatting {
         $fields += "userEnteredFormat.textFormat.foregroundColor"
     }
 
-    if($PSBoundParameters.ContainsKey('FontSize')) {
+    if ($PSBoundParameters.ContainsKey('FontSize')) {
         $cell["userEnteredFormat"]["textFormat"]["fontSize"] = $FontSize
         $fields += "userEnteredFormat.textFormat.fontSize"
     }
 
-    if($PSBoundParameters.ContainsKey('Bold')) {
+    if ($PSBoundParameters.ContainsKey('Bold')) {
         $cell["userEnteredFormat"]["textFormat"]["bold"] = $Bold
         $fields += "userEnteredFormat.textFormat.bold"
     }
-    if($PSBoundParameters.ContainsKey('Italic')) {
+    if ($PSBoundParameters.ContainsKey('Italic')) {
         $cell["userEnteredFormat"]["textFormat"]["italic"] = $Italic
         $fields += "userEnteredFormat.textFormat.italic"
     }
-    if($PSBoundParameters.ContainsKey('Strikethrough')) {
+    if ($PSBoundParameters.ContainsKey('Strikethrough')) {
         $cell["userEnteredFormat"]["textFormat"]["strikethrough"] = $Strikethrough
         $fields += "userEnteredFormat.textFormat.strikethrough"
     }
-    if($PSBoundParameters.ContainsKey('Underline')) {
+    if ($PSBoundParameters.ContainsKey('Underline')) {
         $cell["userEnteredFormat"]["textFormat"]["underline"] = $Underline
         $fields += "userEnteredFormat.textFormat.underline"
     }
 
-    if($PSBoundParameters.ContainsKey('HorizontalAlignment')) {
+    if ($PSBoundParameters.ContainsKey('HorizontalAlignment')) {
         $cell["userEnteredFormat"]["horizontalAlignment"] = $HorizontalAlignment
         $fields += "userEnteredFormat.horizontalAlignment"
     }
-    if($PSBoundParameters.ContainsKey('VerticalAlignment')) {
+    if ($PSBoundParameters.ContainsKey('VerticalAlignment')) {
         $cell["userEnteredFormat"]["verticalAlignment"] = $VerticalAlignment
         $fields += "userEnteredFormat.verticalAlignment"
     }
-    if($PSBoundParameters.ContainsKey('WrapStrategy')) {
+    if ($PSBoundParameters.ContainsKey('WrapStrategy')) {
         $cell["userEnteredFormat"]["wrapStrategy"] = $WrapStrategy
         $fields += "userEnteredFormat.wrapStrategy"
     }
-    if($PSBoundParameters.ContainsKey('WrapStrategy')) {
+    if ($PSBoundParameters.ContainsKey('WrapStrategy')) {
         $cell["userEnteredFormat"]["wrapStrategy"] = $WrapStrategy
         $fields += "userEnteredFormat.wrapStrategy"
     }
@@ -166,8 +167,7 @@ function Set-GSheetsFormatting {
 
     Write-Verbose "Webrequest body: $($requestParams.Body)"
 
-    if($PSCmdlet.ShouldProcess("A1Notation $A1Notation")) {
+    if ($PSCmdlet.ShouldProcess("Format $A1Notation")) {
         Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
     }
-
 }
