@@ -1,7 +1,7 @@
 # GMGoogleDrive
 
 Google Drive REST Api module for Powershell
-With Google Sheets API support
+with Google Sheets API support
 
 ## Table of Contents
 
@@ -17,15 +17,19 @@ With Google Sheets API support
 
 Google Drive is a free service for file storage files. In order to use this storage you need a Google (or Google Apps) user which will own the files, and a Google API client.
 
-1. Go to the [Google Developers console](https://console.developers.google.com/project) and create a new project.
-2. Go to **APIs & Auth** > **APIs** and enable **Drive API**.
-3. Click **Credentials**
-4. Create **OAuth Client ID** Credentials
-5. Select **Web Application** as product type
-6. Configure the **Authorized Redirect URI** to https://developers.google.com/oauthplayground _must not have a ending “/” in the URI_
-7. Save your **Client ID** and **Secret** or full OAuth string
-8. Now you will have a `Client ID`, `Client Secret`, and `Redirect URL`.
-9. You can convert oauth string to oauth `PSObject` for future use
+ 1. Go to the [Google Developers console](https://console.developers.google.com/project) and create a new project.
+    - Now you should be on the [Project Dashboard](https://console.cloud.google.com/home/dashboard)
+ 2. Go to **APIs & Services** > **APIs** and enable **Drive API** and **Sheets API**.
+
+#### Using Web client OAuth 2.0
+
+ 1. Click **Credentials**
+ 2. Create **OAuth Client ID** Credentials
+ 3. Select **Web Application** as product type
+ 4. Configure the **Authorized Redirect URI** to https://developers.google.com/oauthplayground _must not have a ending “/” in the URI_
+ 5. Save your **Client ID** and **Secret** or full OAuth string
+ 6. Now you will have a `Client ID`, `Client Secret`, and `Redirect URL`.
+ 7. You can convert oauth string to oauth `PSObject` for future use
 
     ``` powershell
     $oauth_json = '{"web":{"client_id":"10649365436h34234f34hhqd423478fsdfdo.apps.googleusercontent.com",
@@ -33,44 +37,74 @@ Google Drive is a free service for file storage files. In order to use this stor
       "redirect_uris":["https://developers.google.com/oauthplayground"]}}' | ConvertFrom-Json
     ```
 
-10. Request Authroization Code  
+ 8. Request Authroization Code  
 
-    by powershell
+      - by powershell
 
-    ``` powershell
-    $code = Request-GDriveAuthorizationCode -ClientID $oauth_json.web.client_id `
-      -ClientSecret $oauth_json.web.client_secret
-    ```
+      ``` powershell
+      $code = Request-GDriveAuthorizationCode -ClientID $oauth_json.web.client_id `
+        -ClientSecret $oauth_json.web.client_secret
+      ```
 
-    or manually
-    - Browse to https://developers.google.com/oauthplayground
-    - Click the gear in the right-hand corner and select “_Use your own OAuth credentials_"
-    - Fill in OAuth Client ID and OAuth Client secret
-    - Authorize the API scopes
-        - https://www.googleapis.com/auth/drive
-        - https://www.googleapis.com/auth/drive.file
-        - https://www.googleapis.com/auth/spreadsheets
-    - Save `Authorization Code` or directly **Exchange authorization code** for tokens
-    - Save `Refresh token`, it can not be requested again without new Authorization code
-11. Get refresh Token
+      - or manually
+        1. Browse to https://developers.google.com/oauthplayground
+        2. Click the gear in the right-hand corner and select “_Use your own OAuth credentials_"
+        3. Fill in OAuth Client ID and OAuth Client secret
+        4. Authorize the API scopes
+            - https://www.googleapis.com/auth/drive
+            - https://www.googleapis.com/auth/drive.file
+            - https://www.googleapis.com/auth/spreadsheets
+        5. Save `Authorization Code` or directly **Exchange authorization code** for tokens
+        6. Save `Refresh token`, it can not be requested again without new Authorization code
+ 9. Get refresh Token
 
-    by powershell
+      - by powershell
 
-    ``` powershell 
-    $refresh = Request-GDriveRefreshToken -ClientID $oauth_json.web.client_id `
-      -ClientSecret $oauth_json.web.client_secret `
-      -AuthorizationCode $code
-    ```
+      ``` powershell
+      $refresh = Request-GDriveRefreshToken -ClientID $oauth_json.web.client_id `
+        -ClientSecret $oauth_json.web.client_secret `
+        -AuthorizationCode $code
+      ```
 
-    manually - you already have it if you do **10.5** + **10.6**
+      - manually
 
-12. `Authentication Token` - mandatory parameter for almost every `GDrive` cmdlets, and it need to be refreshed every hour, so you should get it (and can refresh it) at the beginning of your actual work with google drive
+        you already have it if you do **8.5** + **8.6**
 
-    ``` powershell
-    $access = Get-GDriveAccessToken -ClientID $oauth_json.web.client_id `
-      -ClientSecret $oauth_json.web.client_secret `
-      -RefreshToken $refresh.refresh_token
-    ```
+ 10. `Authentication Token` - mandatory parameter for almost every `GDrive` cmdlets, and it need to be refreshed every hour, so you should get it (and can refresh it) at the beginning of your actual work with google drive
+
+      ``` powershell
+      $access = Get-GDriveAccessToken -ClientID $oauth_json.web.client_id `
+        -ClientSecret $oauth_json.web.client_secret `
+        -RefreshToken $refresh.refresh_token
+      ```
+
+#### Using a service account
+
+Using a service account allows you to upload data to folders that are shared with the service account.
+
+In Google Workspace enterprise environments, it is also possible to grant impersonation rights to the service account. With these rights, the service account can act as a user (without OAuth consent screen).
+
+Please check the Google documentation:
+
+- [Create a service account](https://developers.google.com/workspace/guides/create-credentials#create_a_service_account)
+- [Assign impersonation rights (domain-wide delegation)](https://developers.google.com/workspace/guides/create-credentials#optional_set_up_domain-wide_delegation_for_a_service_account)
+
+Google offers two types of service user files .json and .p12. Both types are implemented in this module.
+
+``` PowerShell
+Get-GDriveAccessToken `
+  -Path D:\service_account.json -JsonServiceAccount `
+  -ImpersonationUser "user@domain.com"
+```
+
+``` PowerShell
+$keyData = Get-Content -AsByteStream -Path D:\service_account.p12
+Get-GDriveAccessToken `
+  -KeyData $KeyData `
+  -KeyId 'd41d8cd98f0b24e980998ecf8427e' `
+  -ServiceAccountMail test-account@980998ecf8427e.iam.gserviceaccount.com `
+  -ImpersonationUser "user@domain.com"
+```
 
 ### Usage
 
@@ -87,8 +121,6 @@ Get-GDriveItemProperty -AccessToken $access.access_token -ID $file.id -Property 
 ```
 
 ### Error Handling
-
-Error handling left for self-production :)
 
 Cmdlets exiting at the first error, but, for example if Metadata Upload succeded but content upload failed, _UploadID_ as **ResumeID** returned for resume operations later
 
@@ -189,32 +221,4 @@ if ($Token) {
   $Summary = Get-GDriveSummary -AccessToken $Token.access_token -ErrorAction Stop
   # [...]
 }
-```
-
-### Using a service account
-
-Using a service account allows you to upload data to folders that are shared with the service account.
-
-In Google Workspace enterprise environments, it is also possible to grant impersonation rights to the service account. With these rights, the service account can act as a user (without OAuth consent screen).
-
-Please check the Google documentation:
-
-- [Create a service account](https://developers.google.com/workspace/guides/create-credentials#create_a_service_account)
-- [Assign impersonation rights (domain-wide delegation)](https://developers.google.com/workspace/guides/create-credentials#optional_set_up_domain-wide_delegation_for_a_service_account)
-
-Google offers two types of service user files .json and .p12. Both types are implemented in this module.
-
-``` PowerShell
-Get-GDriveAccessToken `
-  -Path D:\service_account.json -JsonServiceAccount `
-  -ImpersonationUser "user@domain.com"
-```
-
-``` PowerShell
-$keyData = Get-Content -AsByteStream -Path D:\service_account.p12
-Get-GDriveAccessToken `
-  -KeyData $KeyData `
-  -KeyId 'd41d8cd98f0b24e980998ecf8427e' `
-  -ServiceAccountMail test-account@980998ecf8427e.iam.gserviceaccount.com `
-  -ImpersonationUser "user@domain.com"
 ```
