@@ -199,7 +199,6 @@ function Set-GDriveItemContent {
         $WebRequestParams = @{
             Headers = $Headers
             ContentType = "application/json; charset=utf-8"
-            MaximumRedirection  = 0
             UseBasicParsing = $true
             Body = $JsonProperty
         }
@@ -257,6 +256,9 @@ function Set-GDriveItemContent {
 
         if ($PSVersionTable.PSVersion.Major -ge 7) {
             $WebRequestParams.SkipHttpErrorCheck = $true # allow to work with 308 "error" code in PSv7
+        }
+        else {
+            $WebRequestParams.MaximumRedirection = 0 # It is need for PSv5 to work with 308 and not show error on v7
         }
         $WebRequestParams.ContentType = $ContentType
         if ($wr.StatusCode -in 200,308) {
