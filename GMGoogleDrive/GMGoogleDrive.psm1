@@ -29,7 +29,7 @@ Try {
 
 #region Load Public Functions
 Try {
-    Get-ChildItem "$PSScriptRoot\Public\*.ps1" -Exclude *.tests.ps1, *profile.ps1 | ForEach-Object {
+    Get-ChildItem "$PSScriptRoot\Public\*.ps1" -Exclude *.tests.ps1, *profile.ps1 -Recurse | ForEach-Object {
         #$Function = $_.Name
         . $_.FullName
     }
