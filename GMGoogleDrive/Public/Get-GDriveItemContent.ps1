@@ -18,7 +18,7 @@
     Set Length of content will be returned, full file if not set
 .PARAMETER Encoding
     Set output encoding if content will be returned as string.
-    By default used GoodleDrive supplied encoding 
+    By default used GoodleDrive supplied encoding
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE

@@ -38,7 +38,7 @@ param(
     [string]$AccessToken
 )
     $folder = Get-Item $path
-    
+
     $CommonParams = @{
         ParentID = $ParentID
         AccessToken = $AccessToken

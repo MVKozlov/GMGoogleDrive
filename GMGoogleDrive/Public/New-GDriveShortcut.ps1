@@ -48,7 +48,7 @@ function New-GDriveShortcut {
         'keepForever', 'published', # revisions
         IgnoreCase = $false)]
         [string[]]$Property = @('kind','id','name','mimeType','parents'),
-        
+
         [Parameter(Mandatory)]
         [string]$AccessToken
     )

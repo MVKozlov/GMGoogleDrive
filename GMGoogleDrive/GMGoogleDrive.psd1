@@ -92,6 +92,7 @@ FunctionsToExport = @(
     'Get-GDriveItemRevisionList',
     'Set-GDriveItemContent',
     'Set-GDriveItemProperty',
+    'Export-GDriveItemContent',
 
     'Get-GDriveItemPermissionList',
     'Get-GDriveItemPermission',
@@ -119,7 +120,20 @@ FunctionsToExport = @(
     'Clear-GDriveTrash',
 
     'Get-GDriveProxySetting',
-    'Set-GDriveProxySetting'
+    'Set-GDriveProxySetting',
+
+    'New-GSheetsSpreadSheet',
+    'New-GSheetsSheet',
+    'Remove-GSheetsSpreadSheet',
+    'Remove-GSheetsSheet',
+    'Copy-GSheetsSheet',
+    'Clear-GSheetsValue',
+    'Get-GSheetsValue',
+    'Set-GSheetsValue',
+    'Convert-A1NotationToGridRange',
+    'Export-GSheets',
+    'Get-GSheetsSpreadsheet',
+    'Set-GSheetsFormatting'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

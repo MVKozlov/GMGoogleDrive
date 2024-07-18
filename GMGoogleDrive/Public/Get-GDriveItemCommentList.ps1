@@ -86,7 +86,7 @@ param(
         if ($StartModifiedTime) {
             [void]$Params.Add("startModifiedTime=$($StartModifiedTime.ToString('u').Replace(' ','T'))")
         }
-        
+
         if ($NextPageToken) {
             [void]$Params.Add('pageToken=' + $NextPageToken)
         }
