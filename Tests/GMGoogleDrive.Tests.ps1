@@ -1,30 +1,28 @@
-﻿BeforeAll {
+﻿# $pesterConfig = New-PesterConfiguration
+# $pesterConfig.Output.Verbosity = "Detailed"
+# $pesterConfig.Run.SkipRemainingOnFailure = 'Container'
+# Invoke-Pester -Configuration $pesterConfig
+# Invoke-Pester -TagFilter 'Token', 'GSheets' -Output Detailed
+
+BeforeAll {
     Set-StrictMode -Version latest
     Import-Module $PSScriptRoot\..\GMGoogleDrive -Verbose -Force -ErrorAction Stop
     $ErrorActionPreference = 'Stop'
     $global:tmpfile = [IO.Path]::GetTempFileName()
+
+    $global:oauth_json | Should -Not -BeNullOrEmpty
+    $oauth_json.web | Should -Not -BeNullOrEmpty
+    $oauth_json.web.client_id | Should -Not -BeNullOrEmpty
+    $oauth_json.web.client_secret | Should -Not -BeNullOrEmpty
+    $global:refresh    | Should -Not -BeNullOrEmpty
+    $refresh.refresh_token  | Should -Not -BeNullOrEmpty
 }
 
-Describe "Prerequisites" {
-    Context "should have GDrive credential variables and proxy" {
-        It 'should have OAuth credentials' {
-            $global:oauth_json | Should -Not -BeNullOrEmpty
-            $oauth_json.web | Should -Not -BeNullOrEmpty
-            $oauth_json.web.client_id | Should -Not -BeNullOrEmpty
-            $oauth_json.web.client_secret | Should -Not -BeNullOrEmpty
-        }
-        It 'should have refresh token' {
-            $global:refresh    | Should -Not -BeNullOrEmpty
-            $refresh.refresh_token  | Should -Not -BeNullOrEmpty
-        }
-    }
-}
-
-Describe "GMGoogleDrive" {
+Describe "GMGoogleDrive" -Tag "Misc" {
     Context "misc" {
         It 'should load all functions' {
             $Commands = Get-Command -CommandType Function -Module GMGoogleDrive | Select-Object -ExpandProperty Name
-            $Commands.Count | Should -Be 41
+            $Commands.Count | Should -Be 54
             $Commands -contains 'Request-GDriveAuthorizationCode' | Should -Be $True
             $Commands -contains 'Request-GDriveRefreshToken'      | Should -Be $True
             $Commands -contains 'Get-GDriveAccessToken'           | Should -Be $True
@@ -60,7 +58,7 @@ Describe "GMGoogleDrive" {
     }
 }
 
-Describe "GDriveProxySetting" {
+Describe "GDriveProxySetting" -Tag "Proxy" {
     Context "Add Proxy" {
         It "should set proxy" {
             { Set-GDriveProxySetting -Proxy 'http://ya.ru:800/' } | Should -Not -Throw
@@ -97,7 +95,7 @@ Describe "Request-GDriveRefreshToken" {
         $refresh.refresh_token  | Should -Not -BeNullOrEmpty
     }
 }
-Describe "Get-GDriveAccessToken" {
+Describe "Get-GDriveAccessToken" -Tag "Token" {
     BeforeAll {
         $params = @{
             ClientID = $oauth_json.web.client_id
@@ -112,7 +110,7 @@ Describe "Get-GDriveAccessToken" {
     }
 }
 
-Describe "Get-GDriveSummary" {
+Describe "Get-GDriveSummary" -Tag "Summary" {
     It "should return drive summary" {
         { $script:summary = Get-GDriveSummary -AccessToken $access.access_token } | Should -Not -Throw
         $summary | Should -Not -BeNullOrEmpty
@@ -120,7 +118,7 @@ Describe "Get-GDriveSummary" {
     }
 }
 
-Describe "New-GDriveFolder" {
+Describe "New-GDriveFolder" -Tag "Item" {
     It "should create test folder" {
         { $script:folder = New-GDriveFolder -AccessToken $access.access_token -Name "PesterTestFolder" } | Should -Not -Throw
         $folder | Should -Not -BeNullOrEmpty
@@ -129,7 +127,7 @@ Describe "New-GDriveFolder" {
         $folder.mimeType | Should -Be "application/vnd.google-apps.folder"
     }
 }
-Describe "New-GDriveItem" {
+Describe "New-GDriveItem" -Tag "Item" {
     It "should create empty file" {
         { $script:file1 = New-GDriveItem -AccessToken $access.access_token -Name "PesterTestFile1" -ParentID $folder.id -Property 'id','name','mimeType','parents','size' } | Should -Not -Throw
         $file1.id | Should -Not -BeNullOrEmpty
@@ -139,7 +137,7 @@ Describe "New-GDriveItem" {
     }
 }
 
-Describe "New-GDriveShortcut" {
+Describe "New-GDriveShortcut" -Tag "Item" {
     It "should create shortcut to file" {
         { $script:shortcut = New-GDriveShortcut -AccessToken $access.access_token -Name "PesterTestShortcut"  -TargetID $file1.id  } | Should -Not -Throw
         $shortcut | Should -Not -BeNullOrEmpty
@@ -149,7 +147,7 @@ Describe "New-GDriveShortcut" {
     }
 }
 
-Describe "Set-GDriveItemContent" {
+Describe "Set-GDriveItemContent" -Tag "Item" {
     BeforeAll {
         $params = @{
             AccessToken = $access.access_token
@@ -171,7 +169,7 @@ Describe "Set-GDriveItemContent" {
     }
 }
 
-Describe "Add-GDriveItem" {
+Describe "Add-GDriveItem" -Tag "Item" {
     BeforeAll {
         $params = @{
             AccessToken = $access.access_token
@@ -243,13 +241,13 @@ Describe "Add-GDriveItem" {
 }
 
 
-Describe "Set-GDriveItemProperty" {
+Describe "Set-GDriveItemProperty" -Tag "Item" {
         It "should set file1 description" {
             { $script:file1ds = Set-GDriveItemProperty -AccessToken $access.access_token -ID $file1.id -JsonProperty '{ "description": "file1 description" }' } | Should -Not -Throw
             $file1ds.id | Should -Be $file1.id
         }
 }
-Describe "Get-GDriveItemProperty" {
+Describe "Get-GDriveItemProperty" -Tag "Item" {
         It "should get file1 description" {
             { $script:file1dg = Get-GDriveItemProperty -AccessToken $access.access_token -ID $file1.id -Property id,description } | Should -Not -Throw
             $file1dg | Should -Not -BeNullOrEmpty
@@ -257,7 +255,7 @@ Describe "Get-GDriveItemProperty" {
             $file1dg.description | Should -Be 'file1 description'
         }
 }
-Describe "Copy-GDriveItem" {
+Describe "Copy-GDriveItem" -Tag "Item" {
         It "should create file from existing item" {
             { $script:file6 = Copy-GDriveItem -AccessToken $access.access_token -ID $file1.id -Name "PesterTestFile6" -Property 'id','name','size' } | Should -Not -Throw
             $file6.id | Should -Not -BeNullOrEmpty
@@ -265,14 +263,14 @@ Describe "Copy-GDriveItem" {
             $file6.size | Should -Be 10
         }
 }
-Describe "Rename-GDriveItem" {
+Describe "Rename-GDriveItem" -Tag "Item" {
         It "should rename file" {
             { $script:file5 = Rename-GDriveItem -AccessToken $access.access_token -ID $file5.id -NewName "PesterTestFile5r" } | Should -Not -Throw
             $file5.id | Should -Not -BeNullOrEmpty
             $file5.name | Should -Be "PesterTestFile5r"
         }
 }
-Describe "Move-GDriveItem" {
+Describe "Move-GDriveItem" -Tag "Item" {
         It "should move file1 to root" {
             { $script:file1 = Move-GDriveItem -AccessToken $access.access_token -ID $file1.id -NewParentID 'root' -Property 'id','name','parents','size'} | Should -Not -Throw
             $file1.parents.Count | Should -Be 1
@@ -280,13 +278,13 @@ Describe "Move-GDriveItem" {
             $file1.size | Should -Be 10
         }
 }
-Describe "Find-GDriveItem" {
+Describe "Find-GDriveItem" -Tag "Item" {
         It "should find 7 files" {
             { $script:files = Find-GDriveItem -AccessToken $access.access_token -Query 'name contains "PesterTestFile"' } | Should -Not -Throw
             $files.files.Count | Should -Be 6
         }
 }
-Describe "Get-GDriveChildItem" {
+Describe "Get-GDriveChildItem" -Tag "Item" {
     It "should return item list" {
         { $script:list = Get-GDriveChildItem -AccessToken $access.access_token -ParentID $folder.id  } | Should -Not -Throw
         $list | Should -Not -BeNullOrEmpty
@@ -301,12 +299,12 @@ Describe "Get-GDriveChildItem" {
     }
 }
 
-Describe "Get-GDriveItemContent" {
+Describe "Get-GDriveItemContent" -Tag "Item" {
     BeforeAll {
         $params = @{
             AccessToken = $access.access_token
         }
-        $Enc = [System.Text.Encoding]::UTF8
+        $Script:Enc = [System.Text.Encoding]::UTF8
     }
     Context "string" {
         It "should get file content as string" {
@@ -337,7 +335,7 @@ Describe "Get-GDriveItemContent" {
     }
 }
 
-Describe "Remove-GDriveItem" {
+Describe "Remove-GDriveItem" -Tag "Item" {
     Context "Remove Items" {
         It "should trash file1" {
             { Remove-GDriveItem -AccessToken $access.access_token -Confirm:$false -ID $file1.id } | Should -Not -Throw
@@ -376,7 +374,7 @@ Describe "Remove-GDriveItem" {
     #     }
     # }
 }
-Describe 'Revisions support' {
+Describe 'Revisions support' -Tag "Revisions" {
     # Add revisions to file
     It "should create test file" {
         { $script:revfile = Add-GDriveItem -AccessToken $access.access_token -Name 'PesterTestFileRev' -StringContent '0' } | Should -Not -Throw
@@ -397,22 +395,22 @@ Describe 'Revisions support' {
     }
     Context "Get-GDriveItemContent" {
         BeforeAll {
-            $e = [System.Text.Encoding]::Utf8
+            $script:Enc = [System.Text.Encoding]::Utf8
         }
         It "should get content for each revision" {
             foreach ($i in (0..5)) {
-                $content = Get-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[$i].id -Encoding $e
+                $content = Get-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[$i].id -Encoding $Enc
                 $content | Should -Be $i
             }
         }
     }
     Context "Set-GDriveItemContent" {
         BeforeAll {
-            $e = [System.Text.Encoding]::Utf8
+            $script:Enc = [System.Text.Encoding]::Utf8
         }
         It "should get content for each revision" {
             foreach ($i in (0..5)) {
-                $content = Get-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[$i].id -Encoding $e
+                $content = Get-GDriveItemContent -AccessToken $access.access_token -ID $revfile.Item.id -RevisionID $revlist.revisions[$i].id -Encoding $Enc
                 $content | Should -Be $i
             }
         }
@@ -448,7 +446,7 @@ Describe 'Revisions support' {
         { Remove-GDriveItem -AccessToken $access.access_token -Confirm:$false -ID $revfile.Item.id -Permanently } | Should -Not -Throw
     }
 }
-Describe 'Charset support' {
+Describe 'Charset support' -Tag "Charset" {
     Context "cyrillic" {
         BeforeAll {
             $testcontent = "съешь ещё этих мягких французских булок, да выпей чаю"
@@ -502,7 +500,7 @@ Describe 'Charset support' {
     }
 }
 
-Describe 'Comments and Replies'{
+Describe 'Comments and Replies' -Tag "Comments" {
     Context 'Workflow' {
         It "should create text file" {
             { $script:file_c = Add-GDriveItem -AccessToken $access.access_token -Name "PesterTestFileComment" -StringContent 'test' -ContentType 'text/plain' } | Should -Not -Throw
@@ -623,6 +621,104 @@ Describe 'Comments and Replies'{
     }
 }
 
+Describe 'Google sheets' -Tag "GSheets" {
+    Context 'Workflow' {
+        It "should create google sheet file" {
+            { $script:file_s = New-GSheetsSpreadSheet -AccessToken $access.access_token -Name "PesterTestSheet" -SheetName 'Sheet1' } | Should -Not -Throw
+            $file_s.spreadsheetId | Should -Not -BeNullOrEmpty
+            $file_s.properties | Should -Not -BeNullOrEmpty
+            $file_s.properties.title | Should -Be 'PesterTestSheet'
+            $file_s.sheets.Length | Should -Be 1
+            $file_s.sheets[0].properties.title | Should -Be "Sheet1"
+        }
+        It "should add new sheet to google sheet file" {
+            { $script:sheet2 = New-GSheetsSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName 'Sheet2' } | Should -Not -Throw
+            $sheet2.spreadsheetId | Should -Be $file_s.spreadsheetId
+            $sheet2.replies | Should -Not -BeNullOrEmpty
+            $sheet2.replies.Length | Should -Be 1
+            $sheet2.replies[0].addSheet.properties | Should -Not -BeNullOrEmpty
+            $sheet2.replies[0].addSheet.properties.title | Should -Be 'Sheet2'
+        }
+        It "should copy sheet" {
+            { $script:sheet3 = Copy-GSheetsSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName Sheet2 -DestinationSpreadsheetId $file_s.spreadsheetId } | Should -Not -Throw
+            $sheet3.sheetId | Should -Not -BeNullOrEmpty
+        }
+        It "should get spreashsheet properties" {
+            { $script:file_s = Get-GSheetsSpreadsheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId } | Should -Not -Throw
+            $file_s.spreadsheetId | Should -Not -BeNullOrEmpty
+            $file_s.sheets.Length | Should -Be 3
+        }
+        It "should set sheet value" {
+            { $script:sheetval = Set-GSheetsValue -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet2!A1:B2" -Values @(@("test1", "test2"),@("test3", "test4")) } | Should -Not -Throw
+            $sheetval.spreadsheetId | Should -Be $file_s.spreadsheetId
+            $sheetval.updatedCells | Should -Be 4
+            $sheetval.updatedRows | Should -Be 2
+            $sheetval.updatedColumns | Should -Be 2
+        }
+        It "should clear sheet value" {
+            { $script:sheetval = Clear-GSheetsValue -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet2!A1:A1" } | Should -Not -Throw
+            $sheetval.spreadsheetId | Should -Be $file_s.spreadsheetId
+            $sheetval.clearedRange | Should -Be 'sheet2!A1'
+        }
+        It "should get sheet value" {
+            { $script:sheetval = Get-GSheetsValue -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet2!A1:B2" } | Should -Not -Throw
+            $sheetval.values | Should -Not -BeNullOrEmpty
+            $sheetval.values.Length | Should -Be 2
+            $sheetval.values[0].Length | Should -Be 2
+            $sheetval.values[1].Length | Should -Be 2
+            $sheetval.values[0][0] | Should -Be ''
+            $sheetval.values[0][1] | Should -Be 'test2'
+            $sheetval.values[1][0] | Should -Be 'test3'
+            $sheetval.values[1][1] | Should -Be 'test4'
+        }
+        It "should set sheet formatting" {
+            { $script:sheetval = Set-GSheetsFormatting -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet2!A1:A1" -BackgroudColorHex 448811 } | Should -Not -Throw
+            # I dont know hot to get formatting for check
+        }
+        It "should export hash data to sheet" {
+            {
+                @{header1=1; header2=2}, @{header1=3; header2=4} |
+                    Export-GSheets -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName "Sheet1" -Columns 'header1', 'header2'
+            } | Should -Not -Throw
+            { $script:sheetval = Get-GSheetsValue -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet1!A1:B3" } | Should -Not -Throw
+            $sheetval.values | Should -Not -BeNullOrEmpty
+            $sheetval.values.Length | Should -Be 3
+            $sheetval.values[0].Length | Should -Be 2
+            $sheetval.values[1].Length | Should -Be 2
+            $sheetval.values[0][0] | Should -Be 'header1'
+            $sheetval.values[0][1] | Should -Be 'header2'
+            $sheetval.values[1][0] | Should -Be 1
+            $sheetval.values[1][1] | Should -Be 2
+            $sheetval.values[2][0] | Should -Be 3
+            $sheetval.values[2][1] | Should -Be 4
+        }
+        It "should export object data to sheet" {
+            {
+                [PSCustomObject]@{header11=11; header12=12}, [PSCustomObject]@{header11=13; header12=14} |
+                    Export-GSheets -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName "Sheet1"
+            } | Should -Not -Throw
+            { $script:sheetval = Get-GSheetsValue -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet1!A1:B3" } | Should -Not -Throw
+            $sheetval.values | Should -Not -BeNullOrEmpty
+            $sheetval.values.Length | Should -Be 3
+            $sheetval.values[0].Length | Should -Be 2
+            $sheetval.values[1].Length | Should -Be 2
+            $sheetval.values[0][0] | Should -Be 'header11'
+            $sheetval.values[0][1] | Should -Be 'header12'
+            $sheetval.values[1][0] | Should -Be 11
+            $sheetval.values[1][1] | Should -Be 12
+            $sheetval.values[2][0] | Should -Be 13
+            $sheetval.values[2][1] | Should -Be 14
+        }
+        It "should remove sheet" {
+            { $script:sheet = Remove-GSheetsSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetId $sheet3.sheetId -Confirm:$false } | Should -Not -Throw
+            $sheet.spreadsheetId | Should -Be $file_s.spreadsheetId
+        }
+        It "should remove google sheet file" {
+            { $script:sheet = Remove-GSheetsSpreadSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -Permanently -Confirm:$false } | Should -Not -Throw
+        }
+    }
+}
+
 Describe "Revoke-GDriveToken - you lose your refresh token, so does Not test it" {
     It "should revoke access Token" -Skip {
         { Revoke-GDriveToken -Token $access.access_token -Confirm:$false } | Should -Not -Throw
@@ -632,7 +728,7 @@ Describe "Revoke-GDriveToken - you lose your refresh token, so does Not test it"
     }
 }
 
-Describe "Get-GDriveError" {
+Describe "Get-GDriveError" -Tag "Error" {
     It "should return RuntimeException error object" {
         try { throw 'err1' } catch { $err = $_ }
         { $script:rec = Get-GDriveError $err } | Should -Not -Throw
