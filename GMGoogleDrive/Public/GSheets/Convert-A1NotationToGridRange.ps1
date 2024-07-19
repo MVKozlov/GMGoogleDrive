@@ -42,33 +42,27 @@ function Convert-A1NotationToGridRange {
 
         $Return = @{}
 
-        $SheetName = $Matches.sheet.Substring(0,$Matches.sheet.Length-1)
-        $SpreadsheetMeta = Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
-        $Return["sheetId"] = ($SpreadsheetMeta.sheets.properties | Where-Object {$_.title -eq $SheetName}).sheetId
-        if (-not $Return["sheetId"]) {
-            throw "SheetName not found"
-        }
+        $SheetName = $Matches.sheet.Substring(0, $Matches.sheet.Length - 1)
+        $Return.sheetId = Find-GSheetByName -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName $SheetName
 
         if ($Matches.startcolumn) {
-
             $Alphabet = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
-            [int]$Return["startColumnIndex"] = 0
+            [int]$Return.startColumnIndex = 0
             for ($i = 0; $i -lt $Matches.startcolumn.Length; $i++) {
-                [int]$Return["startColumnIndex"] += $Alphabet.IndexOf($Matches.startcolumn.Substring($i,1).toUpper()) * [math]::pow(26, $i)
+                [int]$Return.startColumnIndex += $Alphabet.IndexOf($Matches.startcolumn.Substring($i, 1).toUpper()) * [math]::pow(26, $i)
             }
-            [int]$Return["startColumnIndex"] -= 1
+            [int]$Return.startColumnIndex -= 1
 
-            [int]$Return["endColumnIndex"] = 0
+            [int]$Return.endColumnIndex = 0
             for ($i = 0; $i -lt $Matches.endcolumn.Length; $i++) {
-                [int]$Return["endColumnIndex"] += $Alphabet.IndexOf($Matches.endcolumn.Substring($i,1).toUpper()) * [math]::pow(26, $i)
+                [int]$Return.endColumnIndex += $Alphabet.IndexOf($Matches.endcolumn.Substring($i, 1).toUpper()) * [math]::pow(26, $i)
             }
-
         }
 
         if ($Matches.startrow) {
-            [int]$Return["startRowIndex"] = $Matches.startrow -1
-            [int]$Return["endRowIndex"] = $Matches.endrow
+            [int]$Return.startRowIndex = $Matches.startrow - 1
+            [int]$Return.endRowIndex = $Matches.endrow
         }
 
         Write-Verbose "GridRange: $($Return | ConvertTo-Json -Compress)"
