@@ -7,9 +7,9 @@
     SpreadsheetId file id
 .PARAMETER SheetName
     Name of the sheet where the data should be exported
-.PARAMETER Columns
-    List of columns to create (headers)
-    If it not defined, column headers will be taken from the properties of the objects being passed
+.PARAMETER Property
+    List of object properties that should be created as columns
+    If it not defined, columns will be taken from the properties of the objects being passed
 .PARAMETER TransferLines
     Number of lines that should be transfered to the Google Api with one API call
 .PARAMETER Append
@@ -17,14 +17,14 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Export-GSheets -InputObject $data -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName "Test"
+    Export-GSheets -InputObject $data -AccessToken $access_token -SpreadsheetId $SpreadsheetId -SheetName "Test"
 .EXAMPLE
-    $data | Export-GSheets -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName "Test" -Append
+    $data | Export-GSheets -AccessToken $access_token -SpreadsheetId $SpreadsheetId -SheetName "Test" -Append
 .EXAMPLE
-    Get-ChildItem "C:\" | Export-GSheets -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName "Test"
+    Get-ChildItem "C:\" | Export-GSheets -AccessToken $access_token -SpreadsheetId $SpreadsheetId -SheetName "Test"
 .EXAMPLE
     $data = @{header1='value11'; header2='value12'}, @{header1='value21'; header2='value22'}
-    $data | Export-GSheets -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName "Test" -Columns header1,header2
+    $data | Export-GSheets -AccessToken $access_token -SpreadsheetId $SpreadsheetId -SheetName "Test" -Columns header1,header2
 .OUTPUTS
 
 .NOTES
@@ -40,13 +40,14 @@ function Export-GSheets {
 
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]
         [string]$SheetName,
 
         [Alias('Header')]
-        [string[]]$Columns,
+        [string[]]$Property,
 
         [ValidateRange(1, 10000)]
         [int]$TransferLines = 100,
@@ -69,7 +70,7 @@ function Export-GSheets {
         if ($Append) {
             $FirstRow = Get-GSheetsValue @requestParams -A1Notation ($SheetName + "!1:1")
             if ($FirstRow.values) {
-                $Columns = $FirstRow.values[0]
+                $Property = $FirstRow.values[0]
             }
         }
 
@@ -78,8 +79,8 @@ function Export-GSheets {
     PROCESS {
 
         if ($FirstRun) {
-            if (-not $Columns) {
-                $Columns = ($InputObject | Get-Member -MemberType NoteProperty,Property | Where-Object {$_.Definition -notlike "System.*"}).Name
+            if (-not $Property) {
+                $Property = ($InputObject | Get-Member -MemberType NoteProperty,Property | Where-Object {$_.Definition -notlike "System.*"}).Name
             }
             if (-not $Append) {
                 # Clear the SpreadSheet
@@ -93,7 +94,7 @@ function Export-GSheets {
                 }
 
                 # Adding Header Row
-                Set-GSheetsValue @requestParams -A1Notation "$SheetName!1:1" -Values (,@( $Columns )) | Out-Null
+                Set-GSheetsValue @requestParams -A1Notation "$SheetName!1:1" -Values (,@( $Property )) | Out-Null
                 Set-GSheetsFormatting @requestParams -A1Notation "$SheetName!1:1" -Bold $true | Out-Null
             }
             $FirstRun = $false
@@ -102,7 +103,7 @@ function Export-GSheets {
         # Appending Data
         foreach ($Data in $InputObject) {
             $Row = @()
-            foreach ($Column in $Columns) {
+            foreach ($Column in $Property) {
                 $Row += $Data.$Column
             }
             $Values += @(,$Row)
