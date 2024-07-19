@@ -22,7 +22,7 @@ function Convert-A1NotationToGridRange {
     [CmdletBinding()]
     [OutputType([String])]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName='id')]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
         [Alias('ID')]
         [string]$SpreadsheetId,
@@ -30,20 +30,30 @@ function Convert-A1NotationToGridRange {
         [Parameter(Mandatory)]
         [string]$A1Notation,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName='SheetId')]
+        [int]$SheetId,
+
+        [Parameter(Mandatory, ParameterSetName='id')]
         [string]$AccessToken
     )
 
-    if ($A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7})$') {
+    if ($A1Notation -match '^(?<sheet>.+\!)?(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7})$') {
         $A1Notation = $A1Notation + ":" + $Matches.startcolumn + $Matches.startrow
     }
 
-    if ($A1Notation -match '^(?<sheet>.+\!)(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7}):(?<endcolumn>[A-Za-z]{0,3})(?<endrow>\d{0,7})$') {
-
+    if ($A1Notation -match '^(?<sheet>.+\!)?(?<startcolumn>[A-Za-z]{0,3})(?<startrow>\d{0,7}):(?<endcolumn>[A-Za-z]{0,3})(?<endrow>\d{0,7})$') {
         $Return = @{}
 
-        $SheetName = $Matches.sheet.Substring(0, $Matches.sheet.Length - 1)
-        $Return.sheetId = Find-GSheetByName -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName $SheetName
+        if ($SheetId) {
+            $Return.sheetId = $SheetId
+        }
+        elseif ($Matches.sheet) {
+            $SheetName = $Matches.sheet.Substring(0, $Matches.sheet.Length - 1)
+            $Return.sheetId = Find-GSheetByName -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName $SheetName
+        }
+        else {
+            throw "There is not Sheet Name"
+        }
 
         if ($Matches.startcolumn) {
             $Alphabet = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ"
