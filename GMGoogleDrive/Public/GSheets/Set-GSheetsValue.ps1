@@ -22,9 +22,9 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Set-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!D3:G5" -Values @(,@("Test1", "Test2"))
+    Set-GSheetsValue -AccessToken $access_token -SpreadsheetId $SpreadsheetId -A1Notation "Test!D3:G5" -Values @(,@("Test1", "Test2"))
 .EXAMPLE
-    Set-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test1!A1:B2" -Values @(@(10, 20),@("=a1+b1", "test4")) -ValueInputOption USER_ENTERED -IncludeValuesInResponse -RenderOption FORMULA
+    Set-GSheetsValue -AccessToken $access_token -SpreadsheetId $SpreadsheetId -A1Notation "Test1!A1:B2" -Values @(@(10, 20),@("=a1+b1", "test4")) -ValueInputOption USER_ENTERED -IncludeValuesInResponse -RenderOption FORMULA
 .OUTPUTS
 
 .NOTES
@@ -38,6 +38,7 @@ function Set-GSheetsValue {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]

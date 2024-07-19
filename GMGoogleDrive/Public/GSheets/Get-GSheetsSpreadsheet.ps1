@@ -8,9 +8,9 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Get-GSheetsSpreadsheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
+    Get-GSheetsSpreadsheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId
 .OUTPUTS
-
+    Spreadsheet
 .NOTES
     Author: Jan Elhaus
 .LINK
@@ -21,6 +21,7 @@ function Get-GSheetsSpreadsheet {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]

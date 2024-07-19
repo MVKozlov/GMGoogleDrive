@@ -8,7 +8,7 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Clear-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15"
+    Clear-GSheetsValue -AccessToken $access_token -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15"
 .OUTPUTS
 
 .NOTES
@@ -21,6 +21,7 @@ function Clear-GSheetsValue {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]

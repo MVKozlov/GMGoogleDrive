@@ -6,19 +6,19 @@
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .PARAMETER SheetName
-    name of the sheet to be added
+    Name of the sheet to be added
 .PARAMETER RowCount
-    number of initial rows of the new sheet
+    Number of initial rows of the new sheet
 .PARAMETER ColumnCount
-    number of initial columns of the new sheet
+    Number of initial columns of the new sheet
 .PARAMETER ColorHex
-    number of of the new sheet (tab)
+    Number of of the new sheet (tab)
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    New-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName "Test1"
+    New-GSheetsSheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId -SheetName "Test1"
 .OUTPUTS
-
+    Sheet
 .NOTES
     Author: Jan Elhaus
 .LINK
@@ -29,6 +29,7 @@ function New-GSheetsSheet {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]
@@ -84,6 +85,6 @@ function New-GSheetsSheet {
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 7)"
 
     if ($PSCmdlet.ShouldProcess("New Sheet $SheetName")){
-        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings | Select-Object -ExpandProperty replies | Select-Object -ExpandProperty addSheet
     }
 }

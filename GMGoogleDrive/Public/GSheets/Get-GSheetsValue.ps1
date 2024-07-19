@@ -16,9 +16,9 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Get-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15"
+    Get-GSheetsValue -AccessToken $access_token -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15"
 .EXAMPLE
-    Get-GSheetsValue -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15" -RenderOption formula -MajorDimension columns
+    Get-GSheetsValue -AccessToken $access_token -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15" -RenderOption formula -MajorDimension columns
 .OUTPUTS
 
 .NOTES
@@ -31,6 +31,7 @@ function Get-GSheetsValue {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]

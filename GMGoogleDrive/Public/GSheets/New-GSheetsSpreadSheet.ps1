@@ -10,13 +10,13 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    New-GSheetsSpreadSheet -AccessToken $AccessToken -Name 'New table'
+    New-GSheetsSpreadSheet -AccessToken $access_token -Name 'New table'
 .EXAMPLE
-    New-GSheetsSpreadSheet -AccessToken $AccessToken -Name 'New table' -SheetName 'sheet1'
+    New-GSheetsSpreadSheet -AccessToken $access_token -Name 'New table' -SheetName 'sheet1'
 .EXAMPLE
-    New-GSheetsSpreadSheet -AccessToken $AccessToken
+    New-GSheetsSpreadSheet -AccessToken $access_token
 .OUTPUTS
-
+    Spreadsheet
 .NOTES
     Author: Max Kozlov
 .LINK

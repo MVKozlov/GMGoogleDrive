@@ -10,9 +10,9 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Convert-A1NotationToGridRange -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15"
+    Convert-A1NotationToGridRange -AccessToken $access_token -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:15"
 .OUTPUTS
-
+    GridRange
 .NOTES
     Author: Jan Elhaus
 .LINK
@@ -24,6 +24,7 @@ function Convert-A1NotationToGridRange {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]

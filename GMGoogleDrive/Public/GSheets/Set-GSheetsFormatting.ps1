@@ -14,25 +14,25 @@
 .PARAMETER FontSize
     Specify the font size
 .PARAMETER Bold
-    specify whether the font should be bold
+    Specify whether the font should be bold
 .PARAMETER Italic
-    specify whether the font should be italic
+    Specify whether the font should be italic
 .PARAMETER Strikethrough
-    specify whether the font should be strikethrough
+    Specify whether the font should be strikethrough
 .PARAMETER Underline
-    specify whether the font should be underlined
+    Specify whether the font should be underlined
 .PARAMETER HorizontalAlignment,
-    specify the horizontal alignment of the cell
+    Specify the horizontal alignment of the cell
 .PARAMETER VerticalAlignment,
-    specify the vertical alignment of the cell
+    Specify the vertical alignment of the cell
 .PARAMETER WrapStrategy
-    specify the text wrap strategy alignment of the cell
+    Specify the text wrap strategy alignment of the cell
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Set-GSheetsFormatting -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:1" -FontSize 10 -Strikethrough $false -BackgroudColorHex 623f56
+    Set-GSheetsFormatting -AccessToken $access_token -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:1" -FontSize 10 -Strikethrough $false -BackgroudColorHex 623f56
 .EXAMPLE
-    Set-GSheetsFormatting -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:1" -Bold $true -FontColorHex 623f56
+    Set-GSheetsFormatting -AccessToken $access_token -SpreadsheetId $SpreadsheetId -A1Notation "Test!1:1" -Bold $true -FontColorHex 623f56
 .OUTPUTS
 
 .NOTES
@@ -46,6 +46,7 @@ function Set-GSheetsFormatting {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]

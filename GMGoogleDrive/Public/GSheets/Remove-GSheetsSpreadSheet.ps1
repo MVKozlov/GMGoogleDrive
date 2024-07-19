@@ -6,11 +6,11 @@
 .PARAMETER SpreadsheetId
     SpreadsheetId file id
 .PARAMETER Permanently
-    Permanently remove item. If not set, item moved to trash
+    Permanently remove GoogleSheet. If not set, item moved to trash
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Remove-GSheetsSpreadSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId
+    Remove-GSheetsSpreadSheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId
 .OUTPUTS
 
 .NOTES
@@ -23,6 +23,7 @@ function Remove-GSheetsSpreadSheet {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [switch]$Permanently,

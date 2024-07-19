@@ -7,14 +7,16 @@
     SpreadsheetId file id
 .PARAMETER DestinationSpreadsheetId
     Destination SpreadsheetId file id
+.PARAMETER SheetId
+    Id of the sheet to be copied (can be found in url)
 .PARAMETER SheetName
-    name of the sheet to be copied
+    Name of the sheet to be copied
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Copy-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -DestinationSpreadsheetId $DestinationSpreadsheetId -SheetName "Test1"
+    Copy-GSheetsSheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId -DestinationSpreadsheetId $DestinationSpreadsheetId -SheetName "Test1"
 .EXAMPLE
-    Copy-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -DestinationSpreadsheetId $SpreadsheetId -SheetId 1
+    Copy-GSheetsSheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId -DestinationSpreadsheetId $SpreadsheetId -SheetId 1
 .OUTPUTS
 
 .NOTES
@@ -27,6 +29,7 @@ function Copy-GSheetsSheet {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(Mandatory)]

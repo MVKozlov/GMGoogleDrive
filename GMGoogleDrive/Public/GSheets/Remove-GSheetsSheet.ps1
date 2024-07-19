@@ -8,13 +8,13 @@
 .PARAMETER SheetId
     Id of the sheet to be deleted (can be found in url)
 .PARAMETER SheetName
-    name of the sheet to be deleted
+    Name of the sheet to be deleted
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetId "2045344383"
+    Remove-GSheetsSheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId -SheetId "2045344383"
 .EXAMPLE
-    Remove-GSheetsSheet -AccessToken $AccessToken -SpreadsheetId $SpreadsheetId -SheetName "Sheet1"
+    Remove-GSheetsSheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId -SheetName "Sheet1"
 .OUTPUTS
 
 .NOTES
@@ -28,6 +28,7 @@ function Remove-GSheetsSheet {
     param(
         [Parameter(Mandatory)]
         [ValidatePattern('^[a-zA-Z0-9-_]+$')]
+        [Alias('ID')]
         [string]$SpreadsheetId,
 
         [Parameter(ParameterSetName='SheetId', Mandatory=$true)]
@@ -69,6 +70,6 @@ function Remove-GSheetsSheet {
     Write-Verbose "Webrequest:  $($requestParams | ConvertTo-Json -Depth 3)"
 
     if ($PSCmdlet.ShouldProcess("Remove Sheet $SheetId")){
-        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings
+        Invoke-RestMethod @requestParams -Method POST @GDriveProxySettings | Out-Null
     }
 }
