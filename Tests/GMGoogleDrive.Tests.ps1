@@ -633,15 +633,17 @@ Describe 'Google sheets' -Tag "GSheets" {
         }
         It "should add new sheet to google sheet file" {
             { $script:sheet2 = New-GSheetsSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName 'Sheet2' } | Should -Not -Throw
-            $sheet2.spreadsheetId | Should -Be $file_s.spreadsheetId
-            $sheet2.replies | Should -Not -BeNullOrEmpty
-            $sheet2.replies.Length | Should -Be 1
-            $sheet2.replies[0].addSheet.properties | Should -Not -BeNullOrEmpty
-            $sheet2.replies[0].addSheet.properties.title | Should -Be 'Sheet2'
+            $sheet2.properties | Should -Not -BeNullOrEmpty
+            $sheet2.properties.title | Should -Be 'Sheet2'
         }
         It "should copy sheet" {
             { $script:sheet3 = Copy-GSheetsSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName Sheet2 -DestinationSpreadsheetId $file_s.spreadsheetId } | Should -Not -Throw
             $sheet3.sheetId | Should -Not -BeNullOrEmpty
+        }
+        It "should rename sheet" {
+            { $script:sheet4 = Rename-GSheetsSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetId $sheet3.sheetId -NewName Sheet3 } | Should -Not -Throw
+            $sheet4.properties | Should -Not -BeNullOrEmpty
+            $sheet4.properties.title | Should -Be 'Sheet3'
         }
         It "should get spreashsheet properties" {
             { $script:file_s = Get-GSheetsSpreadsheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId } | Should -Not -Throw
@@ -672,14 +674,32 @@ Describe 'Google sheets' -Tag "GSheets" {
             $sheetval.values[1][1] | Should -Be 'test4'
         }
         It "should set sheet formatting" {
-            { $script:sheetval = Set-GSheetsFormatting -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet2!A1:A1" -BackgroudColorHex 448811 } | Should -Not -Throw
-            # I dont know hot to get formatting for check
+            { $script:sheetval = Set-GSheetsFormatting -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet2!A1:A1" -BackgroudColorHex 40801F } | Should -Not -Throw
+        }
+        It "should get sheet formatting" {
+            { $script:result = Get-GSheetsRaw -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -Fields "sheets.data.rowData.values.effectiveFormat.backgroundColor" -A1Notation 'Sheet2!A1:A1' } | Should -Not -Throw
+            $result | Should -Not -BeNullOrEmpty
+            $result.sheets | Should -Not -BeNullOrEmpty
+            $result.sheets.data | Should -Not -BeNullOrEmpty
+            $result.sheets.data.rowData | Should -Not -BeNullOrEmpty
+            $result.sheets.data.rowData.values | Should -Not -BeNullOrEmpty
+            $result.sheets.data.rowData.values.effectiveFormat | Should -Not -BeNullOrEmpty
+            $result.sheets.data.rowData.values.effectiveFormat.backgroundColor | Should -Not -BeNullOrEmpty
+            $c = $result.sheets.data.rowData.values.effectiveFormat.backgroundColor
+            $c.red | Should -Not -BeNullOrEmpty
+            $c.green | Should -Not -BeNullOrEmpty
+            $c.blue | Should -Not -BeNullOrEmpty
+            [int]($c.red * 100) | Should -Be 75
+            [int]($c.green * 100) | Should -Be 50
+            [int]($c.blue * 100) | Should -Be 88
         }
         It "should export hash data to sheet" {
             {
                 @{header1=1; header2=2}, @{header1=3; header2=4} |
-                    Export-GSheets -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName "Sheet1" -Columns 'header1', 'header2'
+                    Export-GSheets -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName "Sheet1" -Property 'header1', 'header2'
             } | Should -Not -Throw
+        }
+        It "should get exported hash data from sheet" {
             { $script:sheetval = Get-GSheetsValue -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet1!A1:B3" } | Should -Not -Throw
             $sheetval.values | Should -Not -BeNullOrEmpty
             $sheetval.values.Length | Should -Be 3
@@ -695,9 +715,11 @@ Describe 'Google sheets' -Tag "GSheets" {
         It "should export object data to sheet" {
             {
                 [PSCustomObject]@{header11=11; header12=12}, [PSCustomObject]@{header11=13; header12=14} |
-                    Export-GSheets -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName "Sheet1"
+                    Export-GSheets -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName "Sheet3"
             } | Should -Not -Throw
-            { $script:sheetval = Get-GSheetsValue -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet1!A1:B3" } | Should -Not -Throw
+        }
+        It "should get exported object data from sheet" {
+            { $script:sheetval = Get-GSheetsValue -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -A1Notation "Sheet3!A1:B3" } | Should -Not -Throw
             $sheetval.values | Should -Not -BeNullOrEmpty
             $sheetval.values.Length | Should -Be 3
             $sheetval.values[0].Length | Should -Be 2
@@ -711,7 +733,6 @@ Describe 'Google sheets' -Tag "GSheets" {
         }
         It "should remove sheet" {
             { $script:sheet = Remove-GSheetsSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetId $sheet3.sheetId -Confirm:$false } | Should -Not -Throw
-            $sheet.spreadsheetId | Should -Be $file_s.spreadsheetId
         }
         It "should remove google sheet file" {
             { $script:sheet = Remove-GSheetsSpreadSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -Permanently -Confirm:$false } | Should -Not -Throw
