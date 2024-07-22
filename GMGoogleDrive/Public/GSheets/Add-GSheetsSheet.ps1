@@ -16,7 +16,7 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    New-GSheetsSheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId -SheetName "Test1"
+    Add-GSheetsSheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId -SheetName "Test1"
 .OUTPUTS
     Sheet
 .NOTES
@@ -24,7 +24,7 @@
 .LINK
     https://developers.google.com/sheets/api/samples/sheet
 #>
-function New-GSheetsSheet {
+function Add-GSheetsSheet {
     [CmdletBinding(SupportsShouldProcess)]
     param(
         [Parameter(Mandatory)]

@@ -632,7 +632,7 @@ Describe 'Google sheets' -Tag "GSheets" {
             $file_s.sheets[0].properties.title | Should -Be "Sheet1"
         }
         It "should add new sheet to google sheet file" {
-            { $script:sheet2 = New-GSheetsSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName 'Sheet2' } | Should -Not -Throw
+            { $script:sheet2 = Add-GSheetsSheet -AccessToken $access.access_token -SpreadsheetId $file_s.spreadsheetId -SheetName 'Sheet2' } | Should -Not -Throw
             $sheet2.properties | Should -Not -BeNullOrEmpty
             $sheet2.properties.title | Should -Be 'Sheet2'
         }

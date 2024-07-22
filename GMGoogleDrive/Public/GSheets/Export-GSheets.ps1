@@ -89,7 +89,7 @@ function Export-GSheets {
                 }
                 catch {
                     if( (($_.ErrorDetails.Message | ConvertFrom-Json).error.message) -like "Unable to parse range*" ) {
-                        New-GSheetsSheet @requestParams -SheetName $SheetName -RowCount 2 -ColumnCount 1 | Out-Null
+                        Add-GSheetsSheet @requestParams -SheetName $SheetName -RowCount 2 -ColumnCount 1 | Out-Null
                     }
                 }
 
