@@ -13,7 +13,7 @@
 RootModule = 'GMGoogleDrive'
 
 # Version number of this module.
-ModuleVersion = '1.2.0.0'
+ModuleVersion = '1.3.0.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -31,7 +31,7 @@ CompanyName = 'NA'
 Copyright = '(c) 2017-2024 Max Kozlov. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Google Drive REST Api module'
+Description = 'Google Drive and Google Sheets REST Api module'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '5.1'
@@ -122,21 +122,21 @@ FunctionsToExport = @(
     'Get-GDriveProxySetting',
     'Set-GDriveProxySetting',
 
-    'New-GSheetsSpreadSheet',
+    'New-GSheetsSpreadsheet',
+    'Get-GSheetsSpreadsheet',
+    'Remove-GSheetsSpreadsheet',
     'Add-GSheetsSheet',
-    'Remove-GSheetsSpreadSheet',
     'Remove-GSheetsSheet',
     'Copy-GSheetsSheet',
     'Rename-GSheetsSheet',
-    'Clear-GSheetsValue',
+    'Export-GSheets',
     'Get-GSheetsValue',
     'Set-GSheetsValue',
+    'Set-GSheetsFormatting',
+    'Clear-GSheetsValue',
     'Get-GSheetsRaw',
     'Update-GSheetsRaw',
-    'Convert-A1NotationToGridRange',
-    'Export-GSheets',
-    'Get-GSheetsSpreadsheet',
-    'Set-GSheetsFormatting'
+    'Convert-A1NotationToGridRange'
 )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -163,7 +163,7 @@ PrivateData = @{
     PSData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @('Powershell','GoogleDrive', 'REST')
+        Tags = @('Powershell', 'GoogleDrive', 'Google', 'Drive', 'Sheets', 'Spreadsheets', 'REST', 'Api')
 
         # A URL to the license for this module.
         LicenseUri = 'https://opensource.org/licenses/MIT'
@@ -194,4 +194,3 @@ PrivateData = @{
 # DefaultCommandPrefix = 'GDrive'
 
 }
-

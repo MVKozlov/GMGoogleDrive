@@ -10,7 +10,7 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    Remove-GSheetsSpreadSheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId
+    Remove-GSheetsSpreadsheet -AccessToken $access_token -SpreadsheetId $SpreadsheetId
 .OUTPUTS
 
 .NOTES
@@ -18,7 +18,7 @@
 .LINK
     https://developers.google.com/sheets/api/samples/sheet
 #>
-function Remove-GSheetsSpreadSheet {
+function Remove-GSheetsSpreadsheet {
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact='High')]
     param(
         [Parameter(Mandatory)]

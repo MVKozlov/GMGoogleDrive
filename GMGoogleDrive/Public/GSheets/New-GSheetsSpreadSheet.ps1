@@ -10,11 +10,11 @@
 .PARAMETER AccessToken
     Access Token for request
 .EXAMPLE
-    New-GSheetsSpreadSheet -AccessToken $access_token -Name 'New table'
+    New-GSheetsSpreadsheet -AccessToken $access_token -Name 'New table'
 .EXAMPLE
-    New-GSheetsSpreadSheet -AccessToken $access_token -Name 'New table' -SheetName 'sheet1'
+    New-GSheetsSpreadsheet -AccessToken $access_token -Name 'New table' -SheetName 'sheet1'
 .EXAMPLE
-    New-GSheetsSpreadSheet -AccessToken $access_token
+    New-GSheetsSpreadsheet -AccessToken $access_token
 .OUTPUTS
     Spreadsheet
 .NOTES
@@ -22,7 +22,7 @@
 .LINK
     https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets/create
 #>
-function New-GSheetsSpreadSheet {
+function New-GSheetsSpreadsheet {
     [CmdletBinding()]
     param(
         [string]$Name,
