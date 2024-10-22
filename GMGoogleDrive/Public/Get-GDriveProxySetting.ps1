@@ -1,8 +1,8 @@
 ﻿<#
 .SYNOPSIS
-    Set Proxy Settings for use in GDrive functions
+    Get Proxy Settings for use in GDrive functions
 .DESCRIPTION
-    Set Proxy Settings for use in GDrive functions
+    Get Proxy Settings for use in GDrive functions
 .OUTPUTS
     Proxy settings as PSObject
 .NOTES
