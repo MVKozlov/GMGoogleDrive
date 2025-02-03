@@ -32,7 +32,7 @@ param(
     $Headers = @{
         "Authorization" = "Bearer $AccessToken"
     }
-    $Uri = '{0}{1}?{2}' -f $GDriveUri, $ID, "supportsAllDrives=true"
+    $Uri = '{0}{1}?supportsAllDrives=true' -f $GDriveUri, $ID
     Write-Verbose "URI: $Uri"
     if ($PSCmdlet.ShouldProcess($ID, "Restore Item from trash")) {
         Set-GDriveItemProperty @PSBoundParameters -JsonProperty '{ "trashed": "false" }'

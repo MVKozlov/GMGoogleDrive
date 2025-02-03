@@ -50,7 +50,7 @@ param(
             "Authorization" = "Bearer $AccessToken"
         }
         $Revision = if ($RevisionID) { '/revisions/' + $RevisionID } else { '' }
-        $Uri = '{0}{1}{2}?{3}' -f $GDriveUri, $ID, $Revision, "?supportsAllDrives=true"
+        $Uri = '{0}{1}{2}?supportsAllDrives=true' -f $GDriveUri, $ID, $Revision
         Write-Verbose "URI: $Uri"
 
         if ($PSCmdlet.ShouldProcess($ID, "Remove Item")) {
