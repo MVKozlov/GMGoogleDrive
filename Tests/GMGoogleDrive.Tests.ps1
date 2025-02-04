@@ -22,7 +22,7 @@ Describe "GMGoogleDrive" -Tag "Misc" {
     Context "misc" {
         It 'should load all functions' {
             $Commands = Get-Command -CommandType Function -Module GMGoogleDrive | Select-Object -ExpandProperty Name
-            $Commands.Count | Should -Be 54
+            $Commands.Count | Should -Be 57
             $Commands -contains 'Request-GDriveAuthorizationCode' | Should -Be $True
             $Commands -contains 'Request-GDriveRefreshToken'      | Should -Be $True
             $Commands -contains 'Get-GDriveAccessToken'           | Should -Be $True
@@ -213,7 +213,7 @@ Describe "Add-GDriveItem" -Tag "Item" {
             $file4a.id | Should -Not -BeNullOrEmpty
             $file4a.name | Should -Be $script:tmpItem.Name
             $file4a.mimeType | Should -Be "text/plain"
-            $file4a.size | Should -Be 12
+            $file4a.size | Should -Be $script:tmpItem.Length
             # on PSv5.1 times returned are strings
             # on PSv7 times are datetime
             # so let's convert it both to string
