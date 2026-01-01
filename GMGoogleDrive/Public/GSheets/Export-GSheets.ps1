@@ -63,8 +63,8 @@ function Export-GSheets {
         $FirstRun = $true
         $Values  = @()
         $requestParams = @{
-            AccessToken = $AccessToken 
-            SpreadsheetId = $SpreadsheetId 
+            AccessToken = $AccessToken
+            SpreadsheetId = $SpreadsheetId
         }
 
         if ($Append) {

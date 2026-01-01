@@ -29,9 +29,6 @@ param(
     [string]$AccessToken
 )
 
-    $Headers = @{
-        "Authorization" = "Bearer $AccessToken"
-    }
     $Uri = '{0}{1}?supportsAllDrives=true' -f $GDriveUri, $ID
     Write-Verbose "URI: $Uri"
     if ($PSCmdlet.ShouldProcess($ID, "Restore Item from trash")) {
