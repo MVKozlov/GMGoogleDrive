@@ -79,7 +79,8 @@ param(
     [switch]$MoveToNewOwnersRoot,
     [switch]$TransferOwnership,
     [switch]$UseDomainAdminAccess,
-    [switch]$SendNotificationEmail,
+
+    [bool]$SendNotificationEmail = $true,
 
     [string]$EmailMessage,
 
@@ -95,11 +96,12 @@ param(
     if ($EmailMessage) {
         [void]$Params.Add('emailMessage={0}' -f [System.Net.WebUtility]::UrlEncode($EmailMessage))
     }
-    foreach ($k in 'enforceSingleParent','moveToNewOwnersRoot', 'sendNotificationEmail', 'transferOwnership', 'useDomainAdminAccess') {
+    foreach ($k in 'enforceSingleParent','moveToNewOwnersRoot', 'transferOwnership', 'useDomainAdminAccess') {
         if ($PSBoundParameters.ContainsKey($k)) {
             [void]$Params.Add('{0}=true' -f $k)
         }
     }
+    [void]$Params.Add('sendNotificationEmail={0}' -f $SendNotificationEmail)
     $Uri = '{0}{1}/permissions?supportsAllDrives=true&{2}' -f $GDriveUri, $ID, ($Params -join '&')
     Write-Verbose "URI: $Uri"
     $Body = @{
