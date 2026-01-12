@@ -41,7 +41,7 @@
     https://developers.google.com/drive/api/v3/ref-roles
 #>
 function Set-GDriveItemPermission {
-[CmdletBinding(DefaultParameterSetName='Add')]
+[CmdletBinding(DefaultParameterSetName='Add',SupportsShouldProcess=$true)]
 param(
     [Parameter(Mandatory, Position=0)]
     [string]$ID,
@@ -89,5 +89,7 @@ param(
         Headers = $Headers
         ContentType = "application/json; charset=utf-8"
     }
-    Invoke-RestMethod @requestParams -Method Patch -Body $JsonProperty @GDriveProxySettings
+    if ($PSCmdlet.ShouldProcess($ID, "Change permission")) {
+        Invoke-RestMethod @requestParams -Method Patch -Body $JsonProperty @GDriveProxySettings
+    }
 }
