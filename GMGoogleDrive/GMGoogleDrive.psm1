@@ -14,6 +14,14 @@ $GDriveOAuth2Audience = "https://oauth2.googleapis.com/token"
 #TODO: https://developers.google.com/drive/api/v3/batch (may be?)
 
 $GDriveProxySettings = @{}
+$GDriveDefaultSystemProxy =
+    if ($PSVersionTable.PSVersion.Major -gt 5) {
+        [System.Net.WebRequest]::DefaultWebProxy;
+    }
+    else {
+        [System.Net.WebProxy]::GetDefaultProxy()
+    }
+$GDriveEmptySystemProxy = New-Object System.Net.WebProxy($null)
 
 #region Load Private Functions
 Try {
