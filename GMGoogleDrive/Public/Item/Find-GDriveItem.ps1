@@ -12,7 +12,7 @@
 .PARAMETER DriveId
     ID of the shared drive to search
 .PARAMETER Corpora
-    Specifies a collection of items to which the query applies. Prefer user or drive to allDrives for efficiency. 
+    Specifies a collection of items to which the query applies. Prefer user or drive to allDrives for efficiency.
 .PARAMETER AllDriveItems
     Get result from all drives (inluding shared drives)
 .PARAMETER AllResults
@@ -68,13 +68,13 @@ param(
                     'sharedWithMeTime desc', 'starred desc', 'viewedByMeTime desc'
     )]
     [string[]]$OrderBy,
-    
+
     [ValidatePattern(
         '0A[0-9a-zA-Z-_]{13}9PVA',
         ErrorMessage="'{0}' is not a valid DriveID. DriveIDs must be 19 characters long, beginning with '0A' and ending with '9PVA'. (Pattern: '{1}')"
     )]
     [string]$DriveId,
-    
+
     [ValidateSet('user', 'domain', 'drive', 'allDrives')]
     [string]$Corpora,
 

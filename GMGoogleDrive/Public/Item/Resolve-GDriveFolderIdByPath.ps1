@@ -2,18 +2,18 @@
 .SYNOPSIS
     Resolves a hierarchical folder path into a Google Drive folder ID
 .DESCRIPTION
-    Traverses a folder path element-by-element by querying the Google Drive API recursively. 
-    The function can either fail when a subfolder is missing or dynamically build out the 
+    Traverses a folder path element-by-element by querying the Google Drive API recursively.
+    The function can either fail when a subfolder is missing or dynamically build out the
     directory structure on the fly.
 .PARAMETER Path
-    The structural string path of the target folder (e.g., "Test/ABC/123" or "Test\ABC\123"). 
+    The structural string path of the target folder (e.g., "Test/ABC/123" or "Test\ABC\123").
 .PARAMETER AccessToken
     Access Token for request
 .PARAMETER ParentId
-    An optional Google Drive Folder ID or Shared Drive ID to start the search from. 
+    An optional Google Drive Folder ID or Shared Drive ID to start the search from.
     Providing this optimizes performance by bypassing the global root-level search.
 .PARAMETER CreateIfNotExisting
-    If specified, the function will dynamically create any missing folders along the path 
+    If specified, the function will dynamically create any missing folders along the path
     rather than throwing an error.
 .EXAMPLE
     $FolderId = Resolve-GDriveFolderIdByPath -Path "SharedDrive/Test/ABC" -AccessToken $MyToken
@@ -42,7 +42,7 @@ function Resolve-GDriveFolderIdByPath {
 
     # Split the path across both / and \ and strip empty elements via the .Where() method
     $Elements = ($Path -split '[/\\]').Where({ $_ })
-    
+
     if ($Elements.Count -eq 0) {
         Write-Error "The provided path is empty or invalid."
         return $null
@@ -69,18 +69,18 @@ function Resolve-GDriveFolderIdByPath {
             }
 
             Write-Verbose "Querying for '$Element' using: $Query"
-            
-            # -AllDriveItems forces the API to look inside Shared Drives 
+
+            # -AllDriveItems forces the API to look inside Shared Drives
             $SearchResult = Find-GDriveItem -AccessToken $AccessToken -Query $Query -AllDriveItems
 
         }
 
         # Validate if the API returned a valid file list object containing files
         if ($isSimulatedPath -or $null -eq $SearchResult -or $null -eq $SearchResult.files -or $SearchResult.files.Count -eq 0) {
-            
+
             if ($CreateIfNotExisting) {
                 Write-Verbose "Creating folder for '$Element' (Parent: '$CurrentId')"
-                
+
                 # Build parameter splatting table dynamically
                 $FolderParams = @{
                     Name        = $Element
