@@ -16,17 +16,17 @@
     If specified, the function will dynamically create any missing folders along the path 
     rather than throwing an error.
 .EXAMPLE
-    $FolderId = Get-GDriveFolderIdByPath -Path "SharedDrive/Test/ABC" -AccessToken $MyToken
+    $FolderId = Resolve-GDriveFolderIdByPath -Path "SharedDrive/Test/ABC" -AccessToken $MyToken
     Resolves the ID for the folder "ABC" starting from the global root.
 .EXAMPLE
-    $FolderId = Get-GDriveFolderIdByPath -Path "Test\ABC\123" -AccessToken $MyToken -ParentId "0B-zZ...xyz" -CreateIfNotExisting
+    $FolderId = Resolve-GDriveFolderIdByPath -Path "Test\ABC\123" -AccessToken $MyToken -ParentId "0B-zZ...xyz" -CreateIfNotExisting
     Starts searching inside the folder defined by ParentId. If "ABC" or "123" do not exist, they are created automatically.
 .OUTPUTS
     System.String. Returns the alpha-numeric Google Drive ID of the target folder, or $null if the operation fails.
 .NOTES
     - This function issues one API call per path depth level.
 #>
-function Get-GDriveFolderIdByPath {
+function Resolve-GDriveFolderIdByPath {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
@@ -48,16 +48,18 @@ function Get-GDriveFolderIdByPath {
         return $null
     }
 
+    $CurrentId = $ParentId
+
     foreach ($Element in $Elements) {
         # Escape single quotes in folder names to prevent Google Drive API query syntax errors
         $EscapedName = $Element.Replace("'", "\'")
 
-        if ([string]::IsNullOrWhiteSpace($ParentId)) {
+        if ([string]::IsNullOrWhiteSpace($CurrentId)) {
             # Step 1: Search globally for the root folder or Shared Drive top-level directory
             $Query = "name = '{0}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false" -f $EscapedName
         } else {
             # Step 2: Target sub-folders strictly within the verified parent ID
-            $Query = "name = '{0}' and '{1}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false" -f $EscapedName, $ParentId
+            $Query = "name = '{0}' and '{1}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false" -f $EscapedName, $CurrentId
         }
 
         Write-Verbose "Querying for '$Element' using: $Query"
@@ -69,7 +71,7 @@ function Get-GDriveFolderIdByPath {
         if ($null -eq $SearchResult -or $null -eq $SearchResult.files -or $SearchResult.files.Count -eq 0) {
             
             if ($CreateIfNotExisting) {
-                Write-Verbose "Creating folder for '$Element' (Parent: '$ParentId')"
+                Write-Verbose "Creating folder for '$Element' (Parent: '$CurrentId')"
                 
                 # Build parameter splatting table dynamically
                 $FolderParams = @{
@@ -77,8 +79,8 @@ function Get-GDriveFolderIdByPath {
                     AccessToken = $AccessToken
                 }
                 # Only append ParentID parameter if it actually exists
-                if (-not [string]::IsNullOrWhiteSpace($ParentId)) {
-                    $FolderParams['ParentID'] = $ParentId
+                if (-not [string]::IsNullOrWhiteSpace($CurrentId)) {
+                    $FolderParams['ParentID'] = $CurrentId
                 }
 
                 # Create the folder safely
@@ -86,11 +88,11 @@ function Get-GDriveFolderIdByPath {
 
                 # CRITICAL: Verify the folder was actually created successfully
                 if ($null -eq $NewFolder -or [string]::IsNullOrWhiteSpace($NewFolder.id)) {
-                    Write-Error "Failed to create folder '$Element' under parent '$ParentId'."
+                    Write-Error "Failed to create folder '$Element' under parent '$CurrentId'."
                     return $null
                 }
 
-                $ParentId = $NewFolder.id
+                $CurrentId = $NewFolder.id
             } else {
                 Write-Error "Failed to resolve path: Folder '$Element' was not found."
                 return $null
@@ -103,10 +105,10 @@ function Get-GDriveFolderIdByPath {
             }
 
             # Update parent context to the current folder's ID for the next iteration
-            $ParentId = $SearchResult.files[0].id
+            $CurrentId = $SearchResult.files[0].id
         }
     }
 
     # Return the final destination ID
-    return $ParentId
+    return $CurrentId
 }
