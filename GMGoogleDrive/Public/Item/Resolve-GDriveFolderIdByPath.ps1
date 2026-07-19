@@ -27,7 +27,7 @@
     - This function issues one API call per path depth level.
 #>
 function Resolve-GDriveFolderIdByPath {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true)]
     param (
         [Parameter(Mandatory = $true)]
         [string]$Path,
@@ -50,25 +50,33 @@ function Resolve-GDriveFolderIdByPath {
 
     $CurrentId = $ParentId
 
-    foreach ($Element in $Elements) {
-        # Escape single quotes in folder names to prevent Google Drive API query syntax errors
-        $EscapedName = $Element.Replace("'", "\'")
+    # Variable for recursive should process
+    $IsSimulatedPath = $false
 
-        if ([string]::IsNullOrWhiteSpace($CurrentId)) {
-            # Step 1: Search globally for the root folder or Shared Drive top-level directory
-            $Query = "name = '{0}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false" -f $EscapedName
-        } else {
-            # Step 2: Target sub-folders strictly within the verified parent ID
-            $Query = "name = '{0}' and '{1}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false" -f $EscapedName, $CurrentId
+    foreach ($Element in $Elements) {
+
+        if (-not $isSimulatedPath) {
+
+            # Escape single quotes in folder names to prevent Google Drive API query syntax errors
+            $EscapedName = $Element.Replace("'", "\'")
+
+            if ([string]::IsNullOrWhiteSpace($CurrentId)) {
+                # Step 1: Search globally for the root folder or Shared Drive top-level directory
+                $Query = "name = '{0}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false" -f $EscapedName
+            } else {
+                # Step 2: Target sub-folders strictly within the verified parent ID
+                $Query = "name = '{0}' and '{1}' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false" -f $EscapedName, $CurrentId
+            }
+
+            Write-Verbose "Querying for '$Element' using: $Query"
+            
+            # -AllDriveItems forces the API to look inside Shared Drives 
+            $SearchResult = Find-GDriveItem -AccessToken $AccessToken -Query $Query -AllDriveItems
+
         }
 
-        Write-Verbose "Querying for '$Element' using: $Query"
-        
-        # -AllDriveItems forces the API to look inside Shared Drives 
-        $SearchResult = Find-GDriveItem -AccessToken $AccessToken -Query $Query -AllDriveItems
-
         # Validate if the API returned a valid file list object containing files
-        if ($null -eq $SearchResult -or $null -eq $SearchResult.files -or $SearchResult.files.Count -eq 0) {
+        if ($isSimulatedPath -or $null -eq $SearchResult -or $null -eq $SearchResult.files -or $SearchResult.files.Count -eq 0) {
             
             if ($CreateIfNotExisting) {
                 Write-Verbose "Creating folder for '$Element' (Parent: '$CurrentId')"
@@ -83,16 +91,26 @@ function Resolve-GDriveFolderIdByPath {
                     $FolderParams['ParentID'] = $CurrentId
                 }
 
-                # Create the folder safely
-                $NewFolder = New-GDriveFolder @FolderParams
+                if($PSCmdlet.ShouldProcess("Create new folder '$Element' under '$CurrentId'", $Element, "New-GDriveFolder")) {
 
-                # CRITICAL: Verify the folder was actually created successfully
-                if ($null -eq $NewFolder -or [string]::IsNullOrWhiteSpace($NewFolder.id)) {
-                    Write-Error "Failed to create folder '$Element' under parent '$CurrentId'."
-                    return $null
+                    # Create the folder
+                    $NewFolder = New-GDriveFolder @FolderParams
+
+                    # Verify the folder was actually created successfully
+                    if ($null -eq $NewFolder -or [string]::IsNullOrWhiteSpace($NewFolder.id)) {
+                        Write-Error "Failed to create folder '$Element' under parent '$CurrentId'."
+                        return $null
+                    }
+
+                    $CurrentId = $NewFolder.id
+
+                } else {
+
+                    $CurrentId = "DummyIdForElement-" + $Element
+                    $IsSimulatedPath = $true
+
                 }
 
-                $CurrentId = $NewFolder.id
             } else {
                 Write-Error "Failed to resolve path: Folder '$Element' was not found."
                 return $null
