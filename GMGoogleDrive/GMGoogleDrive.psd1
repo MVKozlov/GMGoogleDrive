@@ -93,6 +93,7 @@ FunctionsToExport = @(
     'Set-GDriveItemContent',
     'Set-GDriveItemProperty',
     'Export-GDriveItemContent',
+    'Resolve-GDriveFolderIdByPath',
 
     'Get-GDriveItemPermissionList',
     'Get-GDriveItemPermission',
