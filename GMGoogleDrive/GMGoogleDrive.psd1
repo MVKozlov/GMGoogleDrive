@@ -13,7 +13,7 @@
 RootModule = 'GMGoogleDrive'
 
 # Version number of this module.
-ModuleVersion = '1.3.1.1'
+ModuleVersion = '1.3.2.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
